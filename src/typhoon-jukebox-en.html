@@ -192,7 +192,6 @@
   .dot.done{ color:var(--cyan-dim); border-color:rgba(87,199,227,.55); }
   .dot-lab{ font-size:.72rem; color:var(--muted); }
   .dot-wrap.now .dot-lab{ color:var(--cyan); font-weight:700; }
-  .strike-note{ text-align:center; min-height:1.3em; color:var(--amber); font-size:.85rem; margin:2px 0 0; }
 
   /* narration + data */
   .narration{
@@ -463,9 +462,6 @@
 
   .back-btn.mini{ padding:4px 12px; font-size:.82rem; min-height:2rem; margin-bottom:10px; }
 
-  /* eye-label relocated into the middle column, as an inline badge rather
-     than an absolutely-positioned overlay on the cloud/track view */
-  .eye-label{ display:inline-block; margin:4px 0 10px; color:var(--cyan-dim); font-size:.8rem; background:rgba(51,184,212,.08); padding:4px 10px; border-radius:999px; border:1px solid var(--line); }
 
   .transport-row{ display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; padding-bottom:4px; }
   .transport-btn{
@@ -536,7 +532,6 @@
   #midInfo .chip{ display:flex; flex-direction:column; gap:8px; padding:13px 10px; border-color:#233e52; border-radius:8px; background:#0b1b2a; font-size:10px; color:#8fadc0; }
   #midInfo .chip b{ margin:0; white-space:nowrap; font:600 clamp(.88rem,1.8vw,1.3rem) ui-monospace,monospace; color:#e6f5ff; }
   #midInfo .chip b .unit{ font-size:10px; color:#75bdcf; }
-  .eye-label{ border-color:#2a5364; background:#102a39; color:#9bd8e7; border-radius:5px; font-size:.72rem; }
   .narration{ background:#0e2535; border-color:#24475b; border-left:2px solid #52c8e1; border-radius:0 8px 8px 0; text-align:left; justify-content:flex-start; font-size:.9rem; line-height:1.8; padding:15px; }
   .realfold{ background:#0b1d2d; border-color:#254258; border-radius:10px; padding:16px; }
   .realfold-title{ font-size:.86rem; }
@@ -661,11 +656,10 @@
         <label class="ae-vol">Volume <input id="aeVol" type="range" min="0" max="100" value="45" /></label>
       </div>
 
+      <p class="narration" id="narration" aria-live="polite" aria-atomic="true">Storm loaded. Press play to hear its whole life.</p>
+
       <details class="storm-details" id="stormDetails" open>
-        <summary>Live commentary & storm records</summary>
-      <div class="eye-label" id="eyeLabel">Eye: not yet formed</div>
-      <p class="narration" id="narration">Storm loaded. Press play to hear its whole life.</p>
-      <p class="strike-note" id="strikeNote"></p>
+        <summary>Storm records & landfalls</summary>
 
       <div class="realfold" id="realFold">
         <div class="realfold-title">The real record of this storm</div>
@@ -992,7 +986,6 @@
           getLandfalls(this.rec).forEach(function(lf){
             if (!self.lfFired[lf.t] && beforeT < lf.t && self.t >= lf.t){
               self.lfFired[lf.t] = 1; strikeLandfallFx(lf);
-              $("strikeNote").textContent = "🔔 Landfall right now -- " + lf.place;
             }
           });
         }
@@ -1031,11 +1024,19 @@
           document.querySelectorAll("#demoPathSvg .phase-grade-icon").forEach(function(image, i){
             image.setAttribute("href", iconFile(i === 4 ? "rem" : catFromKt(windAt(phaseAnchors, i / 5))));
           });
-          var st = cur.stages[stIdx];
-          if (st){ $("narration").textContent = st.text; $("eyeLabel").textContent = st.eye; }
+
           document.querySelectorAll(".dot").forEach(function(d, di){ d.classList.toggle("now", di === stIdx); d.classList.toggle("done", di < stIdx); });
           document.querySelectorAll(".dot-wrap").forEach(function(w, wi){ w.classList.toggle("now", wi === stIdx); });
           document.querySelectorAll(".path-stage").forEach(function(g){ g.classList.toggle("now", parseInt(g.getAttribute("data-pstage"), 10) === stIdx); });
+        }
+        var stage = cur.stages[stIdx];
+        if (stage){
+          var landfall = null;
+          if (this.rec && this.t < 1) getLandfalls(this.rec).forEach(function(lf){
+            if (lf.t <= TPL.t && (TPL.t - lf.t) * TPL.dur <= 2.5 && Math.floor(lf.t * 5) === stIdx) landfall = lf;
+          });
+          var narration = playbackNarration(stage, cur.name, landfall);
+          if ($("narration").textContent !== narration) $("narration").textContent = narration;
         }
         var band = Math.floor(this.t * 20);
         if (band !== this.cloudBand){ this.cloudBand = band; updateRealViews(); }
@@ -2170,6 +2171,20 @@
     noteStep:0
   };
 
+  function playbackNarration(stage, name, landfall){
+    var eyes = {
+      "not yet formed":"The eye has not formed yet.", "forming":"The eye is beginning to form.",
+      "huge and clear":"Its eye is large and clearly defined.", "clearly visible":"Its eye is clearly visible.",
+      "its clearest moment":"Its eye is at its clearest.", "filling in":"Its eye is gradually filling in.",
+      "gone":"The eye has disappeared.", "it never really opened at its strongest":"It never developed a clear eye."
+    };
+    var eye = eyes[(stage.eye || "").replace(/^Eye:\s*/, "")] || "";
+    var text = landfall ? "'" + name + "' is making landfall at " + landfall.place + "." : stage.text.replace(/^('[^']+')(?=\S)/, "$1 ");
+    if (!eye || /\beye\b/i.test(text)) return text;
+    var ending = "A typhoon symphony, played to the end.";
+    return text.indexOf(ending) >= 0 ? text.replace(ending, eye + " " + ending) : text + " " + eye;
+  }
+
   /* ---------------- dom helpers ---------------- */
   function $(id){ return document.getElementById(id); }
   /* v6 shell glue: the four old "screen" ids no longer correspond to full
@@ -2418,7 +2433,6 @@
       lastCloudKey = "";
     }
     $("playBack").textContent = t.custom ? "‹ Back to My Typhoon" : "‹ Pick a Typhoon";
-    $("narration").textContent = "'" + t.name + "'is ready. Press play and hear its whole life.";
     var rf = $("realFold");
     if (rf){
       if (t.real){
@@ -2432,7 +2446,6 @@
     }
     TPL.load(t);
     renderAllLandfalls();
-    $("strikeNote").textContent = "";
   }
 
   /* ---------------- custom typhoon ---------------- */
