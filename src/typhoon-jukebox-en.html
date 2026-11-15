@@ -547,6 +547,10 @@
   .curve-head h3{ font-size:.8rem; }
   .curve-cap,.curve-peak{ color:#8cabc0; }
   .transport-row{ gap:22px; padding:4px 0; }
+  .storm-heading-card .transport-row{ position:relative; z-index:1; justify-content:flex-end; gap:10px; margin:14px 0 0; padding:0; }
+  .storm-heading-card .play-btn{ width:44px; height:44px; min-height:44px; font-size:1.2rem; }
+  .storm-heading-card .transport-btn{ width:36px; height:36px; min-height:36px; font-size:.95rem; }
+
   .play-btn{ width:68px; height:68px; border:1px solid #76e1ee; background:#59d2e5; color:#062131; box-shadow:0 0 0 6px #54cada0b; font-size:1.8rem; }
   .play-btn:hover{ background:#94e9f4; }
   .transport-btn{ width:42px; height:42px; background:#102637; border-color:#325267; color:#a6c8da; }
@@ -558,6 +562,7 @@
   @media (max-width:1199px){
     .topbar-main{ padding:12px 18px; }
     .storm-heading-card{ gap:14px; padding:17px 14px; }
+    .storm-heading-card .transport-row{ gap:4px; }
     .record-deck{ padding:7px; border-radius:11px; }
     .info-kicker{ font-size:8px; letter-spacing:.08em; }
     #midInfo .chip{ padding:10px 7px; font-size:9px; }
@@ -568,6 +573,7 @@
     .brand-copy small{ font-size:8px; line-height:1.5; }
     .topbar-main .console-caption{ display:none; }
     .storm-heading-card{ grid-template-columns:82px minmax(0,1fr); padding:14px; gap:16px; }
+    .storm-heading-card .transport-row{ gap:8px; margin-top:10px; }
     #midInfo .play-title .name{ font-size:1.9rem; }
     #midInfo .play-title .en{ font-size:9px; margin-top:6px; }
     .info-kicker{ margin-bottom:6px; }
@@ -625,6 +631,11 @@
         <div class="name" id="playName">Bavi</div>
         <div class="en" id="playEn">BAVI · July 2026</div>
           <div class="record-status"><span class="is-idle">READY TO PLAY</span><span class="is-playing">NOW PLAYING</span></div>
+      <div class="transport-row">
+        <button class="transport-btn" id="prevBtn" type="button" aria-label="Previous storm">&#9198;</button>
+        <button class="play-btn" id="playBtn" type="button" aria-label="Play or pause">&#9654;</button>
+        <button class="transport-btn" id="nextBtn" type="button" aria-label="Next storm">&#9197;</button>
+      </div>
       </div>
       </div>
 
@@ -640,11 +651,7 @@
         <div class="curve-cap"><span id="curveHint">Click the curve to seek</span><span class="curve-legend">Landfall</span></div>
       </div>
 
-      <div class="transport-row">
-        <button class="transport-btn" id="prevBtn" type="button" aria-label="Previous storm">&#9198;</button>
-        <button class="play-btn" id="playBtn" type="button" aria-label="Play or pause">&#9654;</button>
-        <button class="transport-btn" id="nextBtn" type="button" aria-label="Next storm">&#9197;</button>
-      </div>
+
 
       <div class="ae-panel">
         <div class="ae-row" id="aeLayers">
