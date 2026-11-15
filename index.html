@@ -1,2 +1,2651 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=./src/%E5%8F%B0%E9%A3%8E%E7%95%99%E5%A3%B0%E6%9C%BA-%E5%90%88%E5%B9%B6%E7%89%88.html"><title>台风留声机 · Typhoon Jukebox</title></head><body><p><a href="./src/%E5%8F%B0%E9%A3%8E%E7%95%99%E5%A3%B0%E6%9C%BA-%E5%90%88%E5%B9%B6%E7%89%88.html">打开台风留声机</a></p><p><a href="./src/typhoon-jukebox-en.html">English version</a></p></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:," />
+<title>Typhoon Jukebox Demo</title>
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-deep:#000000;
+    --panel:#121212;
+    --panel-2:#1a1a1a;
+    --panel-3:#202020;
+    --line:rgba(255,255,255,.09);
+    --line-strong:rgba(255,255,255,.16);
+    --cyan:#33b8d4;
+    --cyan-dim:#7fd4e8;
+    --cyan-wash:rgba(51,184,212,.12);
+    --ink:#ffffff;
+    --muted:#9a9a9a;
+    --faint:#6b6b6b;
+    --silver:#b3b3b3;
+    --amber:#33b8d4;
+    --landfall:#e8a33d;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(51,184,212,.08), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(51,184,212,.05), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    min-height:100vh;
+  }
+  button, [role="button"], select, summary, input:not([type="checkbox"],[type="radio"]){ min-height:2.25rem; }
+  button{ font-family:inherit; cursor:pointer; }
+  .wrap{ max-width:880px; margin:0 auto; padding:20px 16px 12px; }
+
+  /* legacy full-screen sections are kept in the DOM only so existing ids/handlers
+     resolve; the shell layout below is what's actually visible */
+  .screen{ display:none !important; }
+
+  /* ---------- home ---------- */
+  .hero{ text-align:center; padding:26px 6px 8px; }
+  .hero .dish-mini{ margin:0 auto 10px; width:92px; height:92px; }
+  h1{ font-size:2rem; margin:0 0 8px; letter-spacing:.06em; font-weight:800; }
+  .hero p{ color:var(--muted); margin:0 auto; max-width:520px; line-height:1.7; font-size:.98rem; }
+  .hero p strong{ color:var(--cyan-dim); font-weight:600; }
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:26px 0 8px; }
+  @media (max-width:480px){ .cards{ grid-template-columns:1fr; } }
+  .big-card{
+    background:linear-gradient(160deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    text-align:left; color:var(--ink);
+    min-height:150px;
+    display:flex; flex-direction:column; gap:8px;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .big-card:hover, .big-card:focus-visible{ border-color:var(--cyan); transform:translateY(-2px); outline:none; }
+  .big-card .icon{ width:44px; height:44px; }
+  .big-card .t{ font-size:1.3rem; font-weight:700; letter-spacing:.03em; }
+  .big-card .d{ color:var(--muted); font-size:.9rem; line-height:1.6; }
+  .big-card .go{ margin-top:auto; color:var(--cyan); font-weight:600; font-size:.92rem; }
+  .how{ margin:18px 0 4px; background:rgba(87,199,227,.06); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; }
+  .how h2{ font-size:.95rem; margin:0 0 6px; color:var(--cyan-dim); letter-spacing:.04em; }
+  .how p{ margin:0; color:var(--muted); font-size:.9rem; line-height:1.75; }
+
+  /* ---------- headers / back ---------- */
+  .topbar{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .back-btn{
+    background:transparent; border:1px solid var(--line); color:var(--cyan-dim);
+    border-radius:999px; padding:6px 14px; font-size:.95rem; min-height:2.5rem;
+  }
+  .back-btn:hover{ border-color:var(--cyan); color:var(--cyan); }
+  .topbar h2{ font-size:1.35rem; margin:0; letter-spacing:.03em; }
+  .topbar .sub{ color:var(--muted); font-size:.88rem; }
+
+  /* ---------- month list ---------- */
+  .month-list{ display:flex; flex-direction:column; gap:8px; }
+  .month{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+  .month-head{
+    width:100%; background:transparent; border:0; color:var(--ink);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; font-size:1.02rem; font-weight:600; min-height:3rem; text-align:left;
+  }
+  .month-head .cnt{ color:var(--muted); font-weight:400; font-size:.85rem; }
+  .month-head .chev{ color:var(--cyan); transition:transform .2s ease; }
+  .month.open .month-head .chev{ transform:rotate(180deg); }
+  .month-body{ display:none; padding:4px 12px 12px; }
+  .month.open .month-body{ display:block; }
+  .storm-btn{
+    width:100%; display:flex; align-items:center; gap:10px; text-align:left;
+    background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:12px 14px; margin-top:8px; min-height:3.5rem;
+    transition:border-color .15s ease, background-color .15s ease;
+  }
+  .storm-btn:hover{ border-color:var(--line-strong); background:var(--panel-3); }
+  .storm-btn .swirl{ width:28px; height:28px; object-fit:contain; flex:none; }
+  .storm-btn .storm-copy{ min-width:0; flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+  .storm-btn .storm-heading{ display:flex; align-items:center; gap:8px; width:100%; min-width:0; }
+  .storm-btn .nm{ display:block; flex:none; white-space:nowrap; font-size:1rem; font-weight:600; }
+  .storm-btn .meta{ color:var(--muted); font-size:.82rem; overflow-wrap:anywhere; }
+  .storm-btn .tag{ margin-left:0; min-width:0; flex:0 1 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tag{
+    margin-left:auto; flex:none; font-size:.72rem; padding:3px 8px; border-radius:999px;
+    border:1px solid var(--line); color:var(--cyan-dim);
+  }
+  .tag.demo{ color:var(--muted); border-color:rgba(168,195,207,.35); }
+
+  /* ---------- play screen ---------- */
+  .play-title{ text-align:center; margin:2px 0 10px; }
+  .play-title .name{ font-size:1.5rem; font-weight:700; letter-spacing:.02em; }
+  .play-title .en{ color:var(--muted); font-size:.85rem; margin-top:2px; }
+  .custom-note{ text-align:center; color:var(--amber); font-size:.82rem; margin:-4px 0 8px; display:none; }
+  .custom-note.show{ display:block; }
+
+  .ghost-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px; width:100%;
+    background:transparent; border:1px solid var(--line); color:var(--muted);
+    border-radius:999px; padding:9px 16px; font-size:.9rem; font-weight:600;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .ghost-btn:hover:not(:disabled){ border-color:var(--landfall); color:var(--landfall); }
+  .ghost-btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  .stage{
+    position:relative;
+    display:flex; flex-direction:column; align-items:stretch; gap:4px;
+  }
+  .stage-label{
+    font-size:.82rem; font-weight:700; color:var(--muted); letter-spacing:.04em;
+    margin:12px 0 0;
+  }
+  .stage-label:first-child{ margin-top:0; }
+  .stage .grid-lines{
+    position:absolute; inset:0; opacity:.35; border-radius:var(--radius); overflow:hidden;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 39px, rgba(87,199,227,.10) 39px 40px),
+      repeating-linear-gradient(90deg, transparent 0 39px, rgba(87,199,227,.10) 39px 40px);
+  }
+  .stage .coast{ position:absolute; top:10px; right:12px; color:rgba(159,220,239,.5); font-size:.75rem; letter-spacing:.15em; }
+  /* cloud view -- sits on top, its own block */
+  #cloudView{
+    position:relative; width:100%; min-height:300px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#0d2a3d,#0a1f2e); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  .spiral-box{ transition:transform .8s ease; }
+  .spiral-rotor{ transform-origin:50% 50%; animation:spin 8s linear infinite; animation-play-state:paused; }
+  .playing .spiral-rotor{ animation-play-state:running; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  /* path view -- sits below, its own block */
+  #pathView{
+    position:relative; width:100%; min-height:300px; padding:26px 10px 18px;
+    background:linear-gradient(180deg,#0d2a3d,#0a1f2e); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  .path-svg{ width:100%; height:auto; display:block; }
+  .path-stage{ opacity:.38; transition:opacity .3s ease; }
+  .path-stage .halo{ opacity:0; transition:opacity .3s ease; }
+  .path-stage.now{ opacity:1; }
+  .path-stage.now .halo{ opacity:1; }
+  .path-stage text{ fill:var(--muted); font-size:12px; }
+  .path-stage.now text{ fill:var(--cyan); font-weight:700; }
+  .path-stage .strike-ring{ opacity:0; }
+  .path-stage.now .strike-ring{ opacity:1; stroke:var(--amber); }
+
+  /* strike flash */
+  .strike-flash{
+    position:absolute; inset:0; pointer-events:none; opacity:0;
+    background:radial-gradient(circle at 50% 45%, rgba(232,163,61,.35), transparent 55%);
+  }
+  .strike-flash.go{ animation:flash .7s ease-out; }
+  @keyframes flash{ 0%{opacity:1;} 100%{opacity:0;} }
+
+  /* stage dots */
+  .dots{ display:flex; justify-content:center; align-items:flex-start; gap:6px; margin:14px 0 4px; }
+  .dot-wrap{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .dot{
+    width:44px; height:44px; border-radius:50%;
+    border:2px solid var(--line); background:var(--panel); color:var(--muted);
+    font-size:.95rem; font-weight:700; padding:0;
+    transition:border-color .15s ease, color .15s ease, background-color .15s ease;
+  }
+  .dot:hover{ border-color:var(--cyan); }
+  .dot.now{ border-color:var(--cyan); color:#08222e; background:var(--cyan); }
+  .dot.done{ color:var(--cyan-dim); border-color:rgba(87,199,227,.55); }
+  .dot-lab{ font-size:.72rem; color:var(--muted); }
+  .dot-wrap.now .dot-lab{ color:var(--cyan); font-weight:700; }
+  .strike-note{ text-align:center; min-height:1.3em; color:var(--amber); font-size:.85rem; margin:2px 0 0; }
+
+  /* narration + data */
+  .narration{
+    margin:14px 0 0; text-align:center; font-size:1.05rem; line-height:1.7;
+    min-height:3.4em; display:flex; align-items:center; justify-content:center;
+    background:rgba(87,199,227,.05); border:1px solid var(--line); border-radius:var(--radius); padding:10px 16px;
+  }
+  .chips{ display:flex; gap:10px; justify-content:center; margin:12px 0; flex-wrap:wrap; }
+  .chip{
+    background:var(--panel); border:1px solid var(--line); border-radius:999px;
+    padding:8px 16px; font-size:.92rem; color:var(--muted);
+  }
+  .chip b{ color:var(--ink); font-size:1.05rem; margin-left:4px; }
+  .chip b .unit{ font-size:.8rem; color:var(--cyan-dim); font-weight:600; }
+  .play-row{ display:flex; justify-content:center; padding-bottom:4px; }
+  .play-btn{
+    width:84px; height:84px; border-radius:50%; border:2px solid var(--cyan);
+    background:radial-gradient(circle at 35% 30%, #2b5a72, #17384a);
+    color:var(--cyan); font-size:1.9rem; line-height:1;
+    box-shadow:0 0 16px rgba(51,184,212,.28);
+    transition:box-shadow .2s ease, transform .15s ease;
+  }
+  .play-btn:hover{ box-shadow:0 0 22px rgba(51,184,212,.4); }
+  .play-btn:active{ transform:scale(.96); }
+  .play-hint{ text-align:center; color:var(--muted); font-size:.82rem; margin-top:8px; }
+
+  /* ---------- create ---------- */
+  .form-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; display:flex; flex-direction:column; gap:18px; }
+  .field label{ display:block; font-weight:600; margin-bottom:8px; font-size:.98rem; }
+  .field .val{ color:var(--cyan); font-weight:700; }
+  .field input[type="text"]{
+    width:100%; background:var(--bg-deep); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); padding:10px 12px; font-size:1rem; font-family:inherit;
+  }
+  .field input[type="text"]:focus{ outline:2px solid var(--cyan); outline-offset:1px; }
+  .field input[type="range"]{ width:100%; accent-color:var(--cyan); height:2.25rem; }
+  .range-ends{ display:flex; justify-content:space-between; color:var(--muted); font-size:.78rem; margin-top:-2px; }
+  .templates{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  @media (max-width:520px){ .templates{ grid-template-columns:1fr; } }
+  .tpl{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:12px 10px; text-align:left; min-height:4.2rem;
+  }
+  .tpl .tt{ font-weight:700; font-size:.95rem; display:block; margin-bottom:4px; }
+  .tpl .td{ color:var(--muted); font-size:.8rem; line-height:1.5; display:block; }
+  .tpl.on{ border-color:var(--cyan); background:rgba(87,199,227,.14); }
+  .tpl.on .tt{ color:var(--cyan); }
+  .gen-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:linear-gradient(160deg,#2e7e99,#1d5a73); color:#fff; border:1px solid var(--cyan);
+    border-radius:12px; font-size:1.05rem; font-weight:600; padding:14px; min-height:3.4rem;
+    transition:filter .15s ease;
+  }
+  .gen-btn svg{ width:18px; height:18px; flex:none; }
+  .gen-btn:hover{ filter:brightness(1.12); }
+
+  footer{
+    margin-top:26px; padding:14px 6px 10px; border-top:1px solid rgba(87,199,227,.15);
+    color:var(--muted); font-size:.78rem; line-height:1.7; text-align:center;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .spiral-rotor{ animation-duration:60s; }
+  }
+  .realfold{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-top:16px; text-align:left; }
+  .realfold .realfold-title{ display:flex; align-items:center; gap:8px; font-weight:600; color:var(--ink); }
+  .mid-panel h3.howto-sub{ font-size:1rem; font-weight:600; color:var(--ink); margin:22px 0 6px; }
+  .mid-panel h2 + h3.howto-sub{ margin-top:10px; }
+  .mid-panel p a{ color:var(--cyan); text-decoration:none; }
+  .mid-panel p a:hover{ text-decoration:underline; }
+  .realfold .realfold-title::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--cyan); flex:none; }
+  .realfold .real-body, .realfold .fold-note{ color:var(--muted); line-height:1.7; font-size:.92rem; margin:10px 0 2px; }
+  .fold-src{ font-size:.8rem; opacity:.75; }
+  .fullfold iframe{ width:100%; height:78vh; border:1px solid var(--line); border-radius:10px; margin-top:10px; background:#fff; }
+  #realCloud{ margin:0 auto 6px; max-width:520px; }
+  #realCloud img{ width:100%; display:block; border-radius:12px; border:1px solid var(--line); background:#08131c; min-height:120px; }
+  .cloud-cap{ color:var(--muted); font-size:.82rem; margin-top:8px; line-height:1.6; }
+  .cloud-cap a{ color:var(--cyan); }
+  #cloudFallback{ display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--muted); }
+  #cloudFallback svg{ opacity:.5; }
+  #cloudFallback p{ margin:0; font-size:.85rem; }
+  #trackCanvas{ width:100%; height:300px; display:block; border-radius:10px; }
+  .track-cap{ color:var(--muted); font-size:.8rem; margin-top:8px; line-height:1.6; text-align:left; }
+
+  /* ---------- v4: audio engine panel / curve / landfall popup ---------- */
+  .ae-panel{ margin:16px 0 4px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px; }
+  .ae-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .ae-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--line); background:transparent; color:var(--muted);
+    border-radius:999px; padding:6px 12px; font-size:13px; cursor:pointer; min-height:2.2rem;
+    transition:border-color .15s ease, background-color .15s ease, color .15s ease;
+  }
+  .ae-chip svg{ width:14px; height:14px; flex:none; }
+  .ae-chip.on{ background:var(--cyan-wash); color:var(--cyan); border-color:var(--cyan); font-weight:700; }
+  .ae-vol{ display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13px; color:var(--muted); }
+  .ae-vol input{ flex:1; }
+  .curve-box{ margin:14px 0 0; padding:16px 14px 12px; background:var(--panel); border:1px solid var(--line-strong); border-radius:var(--radius); }
+  .curve-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .curve-head h3{ margin:0; font-size:.88rem; font-weight:600; letter-spacing:.02em; }
+  .curve-peak{ color:var(--muted); font-size:.72rem; white-space:nowrap; }
+  .curve-peak strong{ color:var(--cyan-dim); font-variant-numeric:tabular-nums; font-weight:600; }
+  .curve-cap{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 12px; font-size:.7rem; color:var(--muted); margin-top:10px; line-height:1.5; }
+  .curve-legend{ display:inline-flex; align-items:center; gap:6px; }
+  .curve-legend::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--landfall); }
+  #curveCanvas{ width:100%; height:144px; display:block; cursor:crosshair; }
+  /* landfall cards use a solid dark panel (not a translucent tint) so the
+     text stays readable sitting on top of satellite imagery / the map */
+  .lfpop{ margin-top:12px; background:rgba(8,20,30,.94); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px 14px; position:relative; box-shadow:0 12px 30px rgba(0,0,0,.45); }
+  .lfpop h4{ margin:0 24px 4px 0; font-size:16px; color:#fff; font-weight:700; }
+  .lfpop h4 .lf-place{ color:#ffd9a8; }
+  .lfpop > p{ margin:0 0 8px; font-size:12px; line-height:1.6; color:#c6d9e2; }
+  .lfpop > p b{ color:#fff; }
+  .lfpop .lf-videos{ display:grid; grid-template-columns:1fr; gap:8px; margin:0 0 8px; }
+  .lfpop .lf-vid{ min-width:0; }
+  .lfpop .lf-vid iframe{ width:100%; aspect-ratio:16/9; height:auto; border:0; border-radius:8px; display:block; background:#000; }
+  .lfpop .lf-vid .cap{ font-size:11px; color:#9db8c6; margin-top:3px; line-height:1.4; }
+  .lfpop .lf-actions{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 8px; }
+  /* .lf-btn is not just for the landfall card any more -- the persistent
+     link row under the track map reuses this same style */
+  .lf-btn{
+    display:inline-block; font-size:12.5px; font-weight:700; text-decoration:none;
+    border-radius:999px; padding:7px 13px; background:#c4302b; color:#fff;
+  }
+  .lf-btn:hover{ background:#a52724; }
+  .lf-btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,.4); color:#eaf4f9; }
+  .lf-btn.ghost:hover{ border-color:#fff; background:rgba(255,255,255,.08); }
+  .lfpop .lf-note{ font-size:11px; line-height:1.55; color:#eaf4f9; background:rgba(255,255,255,.06); border-radius:8px; padding:6px 9px; }
+  .lfpop .lf-note a{ color:#7fe3ee; font-weight:700; }
+  #lfClose{
+    position:absolute; top:8px; right:10px; width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    background:none; border:0; border-radius:50%; color:var(--muted); font-size:18px; line-height:1; cursor:pointer;
+    transition:background-color .15s ease, color .15s ease;
+  }
+  #lfClose:hover{ background:rgba(255,255,255,.08); color:var(--ink); }
+  .month-hint2{ font-size:12.5px; color:var(--muted); line-height:1.55; margin:4px 4px 8px; }
+  /* ---------- v4: tc maker (scoped to .tcui so both the middle-column maker
+     form and the right-column map panel share the same look) ---------- */
+  .tcui .panel{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px; margin-top:12px; }
+  .tcui .step{ font-weight:600; font-size:14px; margin:8px 0; color:var(--ink); }
+  .tcui .icon-pick{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tcui .icon-pick button{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:var(--panel-2); border:1.5px solid transparent; border-radius:12px; padding:6px; cursor:pointer;
+    color:var(--ink); font-size:11.5px; transition:border-color .15s ease, background-color .15s ease;
+  }
+  .tcui .icon-pick button.on{ border-color:var(--cyan); background:var(--cyan-wash); }
+  .tcui .icon-pick img{ width:40px; height:40px; }
+  .tcui .name-row{ display:flex; gap:8px; align-items:center; }
+  .tcui .name-row input{ flex:1; background:var(--bg-deep); border:1px solid var(--line); border-radius:10px; color:var(--ink); padding:9px 10px; font-size:15px; }
+  .tcui .name-row input:focus{ outline:2px solid var(--cyan); outline-offset:1px; }
+  .tcui .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--panel-2); border:1px solid var(--line-strong); color:var(--ink); border-radius:10px;
+    padding:9px 12px; cursor:pointer; font-size:14px; transition:border-color .15s ease;
+  }
+  .tcui .btn svg{ width:16px; height:16px; flex:none; }
+  .tcui .btn:hover{ border-color:var(--cyan); }
+  .tcui .btn.primary{ background:var(--cyan); color:#06202a; font-weight:700; border-color:var(--cyan); }
+  .tcui .btn.primary:hover{ border-color:var(--cyan); filter:brightness(1.08); }
+  .tcui .gen-btn{ width:100%; margin-top:12px; }
+  .tcui .months{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tcui .months button{ background:var(--panel-2); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:6px 10px; cursor:pointer; transition:border-color .15s ease; }
+  .tcui .months button.on{ background:var(--cyan-wash); border-color:var(--cyan); color:var(--cyan); font-weight:700; }
+  .tcui .month-hint{ font-size:12.5px; color:var(--muted); line-height:1.55; margin-top:8px; }
+  .tcui .spawn-result{ display:none; margin-top:12px; background:rgba(68,196,135,.12); border:1px solid rgba(68,196,135,.4); border-radius:12px; padding:10px 12px; font-size:14px; line-height:1.6; color:var(--ink); }
+  .tcui .spawn-result.show{ display:block; }
+  .tcui canvas#tcMap{ width:100%; height:auto; border-radius:12px; display:block; }
+  .tcui .bounds-note{ font-size:12.5px; color:var(--muted); line-height:1.55; }
+  #tcMine .card{
+    display:flex; gap:10px; align-items:center; width:100%; text-align:left;
+    background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:12px; padding:8px 10px; margin-top:8px; cursor:pointer;
+    transition:border-color .15s ease;
+  }
+  #tcMine .card:hover{ border-color:var(--cyan); }
+  #tcMine .card img{ width:38px; height:38px; }
+  #tcMine .empty{ font-size:13px; color:var(--muted); }
+
+  /* ================= Spotify-style shell layout ================= */
+  .topbar-main{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:12px 24px; background:var(--panel); border-bottom:1px solid var(--line);
+    font-size:.82rem; color:var(--muted); position:sticky; top:0; z-index:20;
+  }
+  .topbar-main .tb-left{ font-weight:700; color:var(--ink); letter-spacing:.02em; }
+  .topbar-main .tb-right{ color:var(--muted); }
+
+  .shell{ display:flex; align-items:stretch; min-height:calc(100vh - 48px); }
+  .col-left{ width:360px; flex:none; background:var(--bg-deep); border-right:1px solid var(--line); padding:16px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; }
+  .col-mid{ flex:1; min-width:0; background:var(--bg); padding:24px; overflow-y:auto; }
+  .col-right{ width:400px; flex:none; background:var(--panel); border-left:1px solid var(--line); padding:18px; overflow-y:auto; }
+
+  .menu-toggle, .drawer-head, .menu-backdrop{ display:none; }
+  .menu-toggle, .menu-close{
+    align-items:center; justify-content:center; flex:none; width:44px; height:44px;
+    border:1px solid var(--line-strong); border-radius:10px;
+    background:var(--panel-2); color:var(--ink);
+  }
+  .menu-toggle svg{ width:22px; height:22px; }
+  .menu-close{ display:flex; font-size:26px; }
+  .menu-toggle:focus-visible, .menu-close:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+  @media (max-width:1199px){
+    .topbar-main{ padding:10px 16px; gap:12px; }
+    .topbar-main .tb-left{ min-width:0; overflow-wrap:anywhere; }
+    .menu-toggle{ display:flex; }
+    .col-mid{ padding:20px; overflow-wrap:anywhere; }
+    .col-right{ width:clamp(340px, 46vw, 480px); min-width:0; }
+    .col-left{
+      position:fixed; inset:0 auto 0 0; z-index:40;
+      width:min(360px, calc(100vw - 24px)); height:100dvh;
+      padding-top:max(16px, env(safe-area-inset-top));
+      padding-bottom:max(16px, env(safe-area-inset-bottom));
+      border-right:1px solid var(--line-strong);
+      visibility:hidden; transform:translateX(-100%);
+    }
+    .drawer-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .lib-scroll{ min-height:0; overscroll-behavior:contain; }
+    body.menu-open{ overflow:hidden; }
+    body.menu-open .col-left{ visibility:visible; transform:translateX(0); }
+    body.menu-open .menu-backdrop{
+      display:block; position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.65);
+    }
+  }
+  .storm-details > summary{ display:none; }
+  @media (max-width:640px){
+    .shell{ flex-direction:column; min-height:0; }
+    .col-mid, .col-right{ width:100%; padding:16px; border:0; border-bottom:1px solid var(--line); }
+    body[data-mode="player"] .col-mid{ flex:none; padding-bottom:12px; }
+    #midInfo .play-title{ margin:0; }
+    #midInfo .play-title .name{ font-size:1.45rem; }
+    #midInfo .play-title .en{ font-size:.78rem; }
+    #midInfo .chips{ gap:6px; margin:10px 0; }
+    #midInfo .chip{ padding:6px 10px; font-size:.75rem; }
+    #midInfo .chip b{ font-size:.85rem; }
+    .storm-details > summary{
+      display:list-item; min-height:36px; padding:8px 0; cursor:pointer;
+      color:var(--cyan-dim); font-size:.82rem;
+    }
+    .storm-details > summary:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  }
+  @media (max-width:520px){
+    .tcui .name-row{ flex-wrap:wrap; }
+    .tcui .name-row input{ min-width:0; }
+  }
+
+  .lib-entries{ display:flex; flex-direction:column; gap:8px; }
+  .lib-entry{
+    display:flex; align-items:center; gap:8px;
+    background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:999px; padding:10px 16px; font-size:.92rem; font-weight:600; text-align:left;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .lib-entry svg{ width:16px; height:16px; flex:none; color:var(--cyan-dim); }
+  .lib-entry:hover{ border-color:var(--cyan); color:var(--cyan); }
+  .lib-scroll{ flex:1; overflow-y:auto; }
+  .mine-head{ margin:20px 0 8px; font-size:.78rem; font-weight:600; letter-spacing:.02em; color:var(--muted); }
+  .storm-btn.current{ border-color:var(--cyan); background:rgba(51,184,212,.12); border-left:3px solid var(--cyan); }
+
+  /* mode switching: by default show the player/info panels; howto & maker
+     panels/columns are revealed by toggling data-mode on <body> */
+  #midHowto, #midMaker, #rightMaker{ display:none; }
+  body[data-mode="howto"] #midInfo{ display:none; }
+  body[data-mode="howto"] #midHowto{ display:block; }
+  body[data-mode="maker"] #midInfo{ display:none; }
+  body[data-mode="maker"] #midMaker{ display:block; }
+  body[data-mode="maker"] #rightPlayer{ display:none; }
+  body[data-mode="maker"] #rightMaker{ display:block; }
+
+  .back-btn.mini{ padding:4px 12px; font-size:.82rem; min-height:2rem; margin-bottom:10px; }
+
+  /* eye-label relocated into the middle column, as an inline badge rather
+     than an absolutely-positioned overlay on the cloud/track view */
+  .eye-label{ display:inline-block; margin:4px 0 10px; color:var(--cyan-dim); font-size:.8rem; background:rgba(51,184,212,.08); padding:4px 10px; border-radius:999px; border:1px solid var(--line); }
+
+  .transport-row{ display:flex; align-items:center; justify-content:center; gap:18px; margin-top:18px; padding-bottom:4px; }
+  .transport-btn{
+    width:48px; height:48px; border-radius:50%; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--ink); font-size:1.1rem;
+    transition:border-color .15s ease, color .15s ease, transform .1s ease;
+  }
+  .transport-btn:hover{ border-color:var(--cyan); color:var(--cyan); }
+  .transport-btn:active{ transform:scale(.94); }
+
+    #playBack{ display:none !important; } /* the "pick storm / back to maker" chip was dropped: the left column is always on screen, so no back button is needed */
+  </style>
+</head>
+<body data-mode="player">
+
+<div class="topbar-main">
+  <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open typhoon library" aria-controls="librarySidebar" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="tb-left">TYPHOON JUKEBOX · NASA Space Apps Challenge Tokyo 2026</div>
+</div>
+
+<div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
+
+<div class="shell">
+
+  <!-- ============ Left column: typhoon library ============ -->
+  <aside class="col-left" id="librarySidebar" aria-label="Typhoon library" tabindex="-1">
+    <div class="drawer-head"><strong>Typhoon library</strong><button class="menu-close" id="menuClose" type="button" aria-label="Close typhoon library">×</button></div>
+    <div class="lib-entries" style="display:none"></div>
+    <div class="lib-scroll">
+      <div class="month-list" id="monthList"></div>
+      <button class="lib-entry" id="cardCreate" type="button" style="width:100%; margin-top:20px;">+ Build a Typhoon</button>
+      <button class="lib-entry" id="howBtn" type="button" style="width:100%; margin-top:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v5"/><path d="M12 7.6h.01"/></svg>About</button>
+      <div class="mine-head">My Typhoons</div>
+      <div id="tcMine"></div>
+    </div>
+  </aside>
+
+  <!-- ============ Middle column: typhoon info / builder form / about ============ -->
+  <main class="col-mid">
+
+    <div class="mid-panel" id="midInfo">
+      <button class="back-btn mini" type="button" id="playBack">&lsaquo; Pick a storm</button>
+      <div class="play-title">
+        <div class="name" id="playName">Bavi</div>
+        <div class="en" id="playEn">BAVI · July 2026</div>
+      </div>
+
+      <div class="chips">
+        <span class="chip">Central wind<b><span id="chipWind">&ndash;</span> <span class="unit">m/s</span></b></span>
+        <span class="chip">Central pressure<b><span id="chipPres">&ndash;</span> <span class="unit">hPa</span></b></span>
+        <span class="chip">Lifetime<b><span id="chipBpm">&ndash;</span> <span class="unit" id="chipDayUnit">days</span></b></span>
+      </div>
+
+      <details class="storm-details" id="stormDetails" open>
+        <summary>Live commentary & storm records</summary>
+      <div class="eye-label" id="eyeLabel">Eye: not yet formed</div>
+      <p class="narration" id="narration">Storm loaded. Press play to hear its whole life.</p>
+      <p class="strike-note" id="strikeNote"></p>
+
+      <div class="realfold" id="realFold">
+        <div class="realfold-title">The real record of this storm</div>
+        <p class="real-body" id="realBody"></p>
+      </div>
+
+      <div id="lfPop" class="lf-list"></div>
+      </details>
+    </div>
+
+    <div class="mid-panel" id="midHowto">
+      <h2>About</h2>
+      <h3 class="howto-sub">How the sound is made</h3>
+      <p>A typhoon's satellite imagery has always been <strong>silent</strong>. This jukebox gives it a voice -- turning a typhoon's life, from birth to dissipation, into a <strong>typhoon symphony</strong>: wind speed sets the tempo, pressure sets the bass, and every step up (or a landfall) rings out a metallic hit.</p>
+      <p>Sound mapping (symphonic version): wind speed sets the pitch, carried by lead strings whose long notes overlap and glide into each other with a reverb tail; a string pad cycles Am&ndash;F&ndash;C&ndash;G underneath for the whole piece; a timpani-and-low-string pulse gets denser and heavier as wind speed rises; French horns join at Category 3, full brass joins at Category 4; as the storm nears its peak the orchestration, volume and a timpani roll all climb together, with a brass chord slamming down at the very top, then the whole layer falls away as the storm weakens. The bass line instead tracks the current pressure -- the bigger the pressure drop, the lower and heavier the double bass, bassoon and tuba get; the faster the storm intensifies, the denser the notes. Wind is a string tremolo plus a breathy flute (continuous, no noise floor), rain is harp arpeggios and plucked-string raindrops, thunder is a timpani roll plus low brass; landfall percussion uses low timpani with a very quiet cymbal brush for every category -- and its loudness scales with the wind speed at the moment of landfall. Everything is synthesized in real time; no samples are used.</p>
+      <h3 class="howto-sub">Data sources</h3>
+      <p>Data source: <a href="https://en.wikipedia.org/wiki/2026_Pacific_typhoon_season" target="_blank" rel="noopener">Wikipedia, "2026 Pacific typhoon season"</a> (JMA naming and peak-intensity records, JTWC category), checked as of 2026-11-11; the typhoon season is not yet over. Typhoon No. 32, Cempaka, has received its final update: it formed as a tropical depression on November 5, 2026, was named on November 7, reached its peak of 155 km/h (JMA 10-minute sustained wind, roughly 85 kt) and a minimum pressure of 955 hPa (JMA "Very Strong Typhoon") on November 10, weakened to a severe tropical storm (60 kt, 985 hPa, at 29.2°N, 151.0°E) at 09:00 UTC on November 11, and was declared extratropical by the JMA at 12:00 UTC that same day, ending its life as a tropical cyclone. This page is a static page that does not update automatically day to day; its data is current as of 2026-11-11, and any typhoons after that date are not included here.</p>
+      <p>Every other storm's peak wind speed, pressure and lifespan shown here are the real recorded values; the wind-speed curve used for playback is a sonified interpretation generated from that real peak and lifespan (including Bavi's eyewall-replacement dip and its two landfalls, anchored to its best-track positions), and the pressure shown during playback is an estimate derived from wind speed.</p>
+      <h3 class="howto-sub">Maps and icons</h3>
+      <p>Both maps use real Esri World Imagery satellite tiles as their base layer (loaded live over the network, so coastlines follow the real imagery), with the selection box, hard boundaries, spawn point and track drawn on top. Each storm also links from the player to NASA Worldview, where you can view the real satellite cloud imagery (VIIRS true-color) from the middle of its life. The icons are a new hand-drawn nine-piece set by Zhang.</p>
+      <p>This page turns typhoon data into sound as a demonstration piece -- it is not an official warning. For evacuation and other official guidance, always follow your local meteorological agency.</p>
+    </div>
+
+    <div class="mid-panel" id="midMaker">
+      <div id="tcMaker" class="tcui">
+        <div class="panel">
+          <div class="step">Step 1 &middot; Pick an icon (sets its peak category)</div>
+          <div class="icon-pick" id="tcIconPick"></div>
+          <div class="step">Step 2 &middot; Give it a name</div>
+          <div class="name-row">
+            <input id="tcName" type="text" maxlength="12" value="Little Whirl" aria-label="Name for your custom typhoon" />
+            <button class="btn" id="tcDice" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.97a4 4 0 0 0 3.3-1.7l5.45-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.97a4 4 0 0 1 3.3 1.7l5.45 8.6a4 4 0 0 0 3.3 1.7H22"/></svg>Reroll name</button>
+          </div>
+          <div class="step">Step 3 &middot; Pick the month it forms in</div>
+          <div class="months" id="tcMonthPick"></div>
+          <div class="month-hint" id="tcMonthHint"></div>
+          <button class="btn primary gen-btn" id="tcGenBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg>Randomly generate this typhoon</button>
+          <div class="spawn-result" id="tcSpawn"></div>
+        </div>
+      </div>
+
+      <details class="fold" id="tcMakerFold">
+        <summary>Simple typhoon builder (wind / pressure sliders)</summary>
+        <div class="form-card">
+          <div class="field">
+            <label for="cName">Give it a name</label>
+            <input type="text" id="cName" maxlength="12" placeholder="e.g. Whirlwind Kid" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="cWind">Max wind speed <span class="val" id="cWindVal">38 m/s</span></label>
+            <input type="range" id="cWind" min="15" max="55" step="1" value="38" />
+            <div class="range-ends"><span>15 m/s, breezy</span><span>55 m/s, super typhoon</span></div>
+          </div>
+          <div class="field">
+            <label for="cPres">Minimum pressure <span class="val" id="cPresVal">955 hPa</span></label>
+            <input type="range" id="cPres" min="915" max="995" step="1" value="955" />
+            <div class="range-ends"><span>915 hPa, very low</span><span>995 hPa, fairly high</span></div>
+          </div>
+          <div class="field">
+            <label>How does it live its life? (pick one)</label>
+            <div class="templates" id="templates">
+              <button class="tpl on" type="button" data-tpl="long">
+                <span class="tt">Long-lived at sea</span>
+                <span class="td">Grows slowly over open water, lives a long life, and finally fades away at sea.</span>
+              </button>
+              <button class="tpl" type="button" data-tpl="fast">
+                <span class="tt">Fast landfall</span>
+                <span class="td">Grows fast, slams into land with a loud crash, then weakens quickly.</span>
+              </button>
+              <button class="tpl" type="button" data-tpl="weak">
+                <span class="tt">Weak and fading</span>
+                <span class="td">Never gets very strong -- comes in gently, leaves gently.</span>
+              </button>
+            </div>
+          </div>
+          <button class="gen-btn" type="button" id="genBtn">Generate my typhoon symphony</button>
+        </div>
+      </details>
+    </div>
+
+  </main>
+
+  <!-- ============ Right column: player ============ -->
+  <section class="col-right">
+
+    <div class="right-panel" id="rightPlayer">
+      <p class="custom-note" id="customNote">Custom typhoons have no real satellite imagery -- the cloud view above uses a simulated animation instead</p>
+
+      <div class="stage" id="stageBox">
+        <div class="grid-lines"></div>
+        <div class="coast">NORTHWEST PACIFIC</div>
+        <div class="strike-flash" id="strikeFlash"></div>
+
+        <!-- cloud view -->
+        <div class="stage-label">Cloud view</div>
+        <div id="cloudView">
+          <div id="realCloud" style="display:none">
+            <img id="cloudImg" alt="Real NASA MODIS satellite cloud imagery" />
+            <div class="cloud-cap"><span id="cloudCap"></span> &middot; <a id="wvOpen" href="#" target="_blank" rel="noopener">Open this day in NASA Worldview &#8599;</a></div>
+          </div>
+          <div class="spiral-box" id="spiralBox">
+            <svg width="230" height="230" viewBox="0 0 230 230" role="img" aria-label="Spinning typhoon cloud graphic (illustrative)">
+              <g class="spiral-rotor" id="spiralRotor">
+                <circle cx="115" cy="115" r="104" fill="rgba(51,184,212,.05)"/>
+                <path d="M115 115 m0-14 a14 14 0 1 1-14 14 a28 28 0 1 0 28-28 a44 44 0 1 1-44 44 a62 62 0 1 0 62-62 a80 80 0 1 1-80 80" fill="none" stroke="#7fd4e8" stroke-width="7" stroke-linecap="round" opacity=".85"/>
+                <path d="M115 60 a55 55 0 0 1 48 28" fill="none" stroke="#33b8d4" stroke-width="10" stroke-linecap="round" opacity=".55"/>
+                <path d="M60 150 a62 62 0 0 0 40 22" fill="none" stroke="#33b8d4" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+                <path d="M170 92 a58 58 0 0 0-16-34" fill="none" stroke="#b3b3b3" stroke-width="8" stroke-linecap="round" opacity=".4"/>
+              </g>
+              <circle cx="115" cy="115" r="13" fill="#0a0a0a" stroke="#33b8d4" stroke-width="2.5"/>
+              <circle cx="115" cy="115" r="4" fill="#33b8d4"/>
+            </svg>
+          </div>
+          <div id="cloudFallback" style="display:none">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17.5 17H7a4 4 0 1 1 .9-7.9 5 5 0 0 1 9.6 1.9H18a3 3 0 0 1 0 6z"/>
+              <path d="M3 3l18 18"/>
+            </svg>
+            <p>The satellite cloud image couldn't load right now</p>
+          </div>
+        </div>
+
+        <!-- hand-drawn track-map view -->
+        <div class="stage-label">Track map</div>
+        <div id="pathView">
+          <canvas id="trackCanvas" width="640" height="300"></canvas>
+          <div class="track-cap" id="trackCap">The moving hand-drawn icon shows the current replay intensity. Orange rings mark landfalls. Map: Esri.</div>
+          <svg class="path-svg" id="demoPathSvg" viewBox="0 0 640 250" role="img" aria-label="Hand-drawn track map: the storm's five life stages arranged along its path">
+            <path d="M60 200 C 180 190, 220 120, 330 108 C 440 96, 500 70, 590 44" fill="none" stroke="#33b8d4" stroke-width="2.5" stroke-dasharray="7 8" opacity=".7"/>
+            <path d="M560 30 l34 8 -26 16 z" fill="rgba(51,184,212,.15)" stroke="#33b8d4" stroke-width="1.5"/>
+            <text x="566" y="24" fill="#33b8d4" font-size="12">Land</text>
+            <!-- stage glyphs injected positions -->
+            <g class="path-stage" data-pstage="0">
+              <circle class="halo" cx="60" cy="200" r="34" fill="rgba(51,184,212,.14)"/>
+              <circle class="strike-ring" cx="60" cy="200" r="27" fill="none" stroke-width="2"/>
+              <image class="phase-grade-icon" x="36" y="176" width="48" height="48" href="./assets/typhoon-icons/icon-l.png" />
+              <text x="60" y="246" text-anchor="middle">1 Formation</text>
+            </g>
+            <g class="path-stage" data-pstage="1">
+              <circle class="halo" cx="196" cy="152" r="38" fill="rgba(51,184,212,.14)"/>
+              <circle class="strike-ring" cx="196" cy="152" r="30" fill="none" stroke-width="2"/>
+              <image class="phase-grade-icon" x="169" y="125" width="54" height="54" href="./assets/typhoon-icons/icon-l.png" />
+              <text x="196" y="212" text-anchor="middle">2 Growth</text>
+            </g>
+            <g class="path-stage" data-pstage="2">
+              <circle class="halo" cx="330" cy="108" r="44" fill="rgba(51,184,212,.16)"/>
+              <circle class="strike-ring" cx="330" cy="108" r="36" fill="none" stroke-width="2.5"/>
+              <image class="phase-grade-icon" x="298" y="76" width="64" height="64" href="./assets/typhoon-icons/icon-l.png" />
+              <text x="330" y="176" text-anchor="middle">3 Peak</text>
+            </g>
+            <g class="path-stage" data-pstage="3">
+              <circle class="halo" cx="462" cy="82" r="38" fill="rgba(51,184,212,.14)"/>
+              <circle class="strike-ring" cx="462" cy="82" r="30" fill="none" stroke-width="2"/>
+              <image class="phase-grade-icon" x="435" y="55" width="54" height="54" href="./assets/typhoon-icons/icon-l.png" />
+              <text x="462" y="142" text-anchor="middle">4 Weakening</text>
+            </g>
+            <g class="path-stage" data-pstage="4">
+              <circle class="halo" cx="578" cy="52" r="32" fill="rgba(51,184,212,.14)"/>
+              <circle class="strike-ring" cx="578" cy="52" r="25" fill="none" stroke-width="2"/>
+              <image class="phase-grade-icon" x="556" y="30" width="44" height="44" href="./assets/typhoon-icons/icon-l.png" />
+              <text x="578" y="106" text-anchor="middle">5 Dissipation</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="curve-box">
+        <div class="curve-head"><h3 id="curveTitle">Wind-speed curve</h3><span class="curve-peak">Peak <strong id="curvePeak">– kt</strong></span></div>
+        <canvas id="curveCanvas" height="144" role="img" aria-labelledby="curveTitle" aria-describedby="curveHint"></canvas>
+        <div class="curve-cap"><span id="curveHint">Click the curve to seek</span><span class="curve-legend">Landfall</span></div>
+      </div>
+
+      <div class="transport-row">
+        <button class="transport-btn" id="prevBtn" type="button" aria-label="Previous storm">&#9198;</button>
+        <button class="play-btn" id="playBtn" type="button" aria-label="Play or pause">&#9654;</button>
+        <button class="transport-btn" id="nextBtn" type="button" aria-label="Next storm">&#9197;</button>
+      </div>
+
+      <div class="ae-panel">
+        <div class="ae-row" id="aeLayers">
+          <button type="button" class="ae-chip on" data-layer="music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music</button>
+          <button type="button" class="ae-chip on" data-layer="wind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.8 19.6a2 2 0 1 0 1.2-3.6H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></svg>Wind</button>
+          <button type="button" class="ae-chip on" data-layer="rain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 14v6M12 16v6M16 14v6"/></svg>Rain</button>
+          <button type="button" class="ae-chip on" data-layer="thunder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>Thunder</button>
+        </div>
+        <label class="ae-vol">Volume <input id="aeVol" type="range" min="0" max="100" value="45" /></label>
+      </div>
+
+    </div>
+
+    <div class="right-panel tcui" id="rightMaker">
+      <div class="panel">
+        <div class="step">Spawn region &middot; Northwest Pacific (you can draw a box)</div>
+        <canvas id="tcMap" width="640" height="520" aria-label="Map of the typhoon's spawn location"></canvas>
+        <div class="name-row" style="margin-top:10px">
+          <button class="btn" id="tcBoxBtn" type="button" aria-pressed="false">&#9643; Draw a box on the map</button>
+          <button class="btn" id="tcBoxClear" type="button">Clear box (use the full range)</button>
+        </div>
+        <p class="bounds-note" id="tcBoxInfo">Right now it uses the entire random range. Click "Draw a box on the map", then press and drag on the map to draw a box -- the spawn point will then be picked at random only inside that box (it still never crosses the hard boundaries below).</p>
+        <p class="bounds-note">Hard boundaries (dashed box): north limit <b>45°N</b> -- it will never go north of Hokkaido; south limit <b>39°S</b> -- it will never go south of Australia; west limit 100°E, east limit 180°E. Every time you click "Randomly generate," the position is redrawn.</p>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<footer>
+  Demo sample data &middot; this is not an official warning -- for evacuation guidance, always follow your local meteorological agency &middot; Data: NASA Earth Observatory / GPM (release build)
+</footer>
+
+<!-- The legacy "screen" containers below only exist to hold ids/click logic that wasn't migrated; they no longer take part in the visible layout -->
+<section class="screen" id="screen-home"><button id="cardPick" type="button">Pick a storm</button></section>
+<section class="screen" id="screen-pick"><button class="back-btn" type="button" data-back="home">&lsaquo; Back</button></section>
+<section class="screen" id="screen-play"></section>
+<section class="screen" id="screen-create"><button class="back-btn" type="button" data-back="home">&lsaquo; Back</button></section>
+
+<script>
+(function(){
+  "use strict";
+  /* Narrow-screen library drawer; desktop keeps the persistent sidebar. */
+  var menuToggle = document.getElementById("menuToggle");
+  var librarySidebar = document.getElementById("librarySidebar");
+  var menuMedia = window.matchMedia("(max-width:1199px)");
+  var menuBackground = document.querySelectorAll(".topbar-main, .col-mid, .col-right");
+  function setMenuOpen(open, restoreFocus){
+    open = open && menuMedia.matches;
+    document.body.classList.toggle("menu-open", open);
+    menuToggle.setAttribute("aria-expanded", String(open));
+    librarySidebar.inert = menuMedia.matches && !open;
+    menuBackground.forEach(function(el){ el.inert = open; });
+    if (open){
+      librarySidebar.setAttribute("role", "dialog");
+      librarySidebar.setAttribute("aria-modal", "true");
+      document.getElementById("menuClose").focus();
+    } else {
+      librarySidebar.removeAttribute("role");
+      librarySidebar.removeAttribute("aria-modal");
+      if (restoreFocus && menuMedia.matches) menuToggle.focus();
+    }
+  }
+  menuToggle.addEventListener("click", function(){ setMenuOpen(true); });
+  document.getElementById("menuClose").addEventListener("click", function(){ setMenuOpen(false, true); });
+  document.getElementById("menuBackdrop").addEventListener("click", function(){ setMenuOpen(false, true); });
+  librarySidebar.addEventListener("click", function(ev){
+    if (ev.target.closest(".storm-btn, #tcMine .card, #cardCreate, #howBtn")) setMenuOpen(false, true);
+  });
+  document.addEventListener("keydown", function(ev){
+    if (!document.body.classList.contains("menu-open")) return;
+    if (ev.key === "Escape"){ ev.preventDefault(); setMenuOpen(false, true); }
+    if (ev.key === "Tab"){
+      var buttons = Array.from(librarySidebar.querySelectorAll('button, a[href], input, select, [tabindex="0"]')).filter(function(el){ return !el.disabled && el.getClientRects().length; });
+      var first = buttons[0], last = buttons[buttons.length - 1];
+      if (ev.shiftKey && document.activeElement === first){ ev.preventDefault(); last.focus(); }
+      else if (!ev.shiftKey && document.activeElement === last){ ev.preventDefault(); first.focus(); }
+    }
+  });
+  menuMedia.addEventListener("change", function(){
+    var hadSidebarFocus = librarySidebar.contains(document.activeElement);
+    setMenuOpen(false, hadSidebarFocus);
+    if (!menuMedia.matches && (document.activeElement === menuToggle || document.activeElement.id === "menuClose")) librarySidebar.focus();
+  });
+  setMenuOpen(false);
+
+  /* Keep the player prominent on phones; full records stay available. */
+  var compactMedia = window.matchMedia("(max-width:640px)");
+  var stormDetails = document.getElementById("stormDetails");
+  function syncStormDetails(){ stormDetails.open = !compactMedia.matches; }
+  compactMedia.addEventListener("change", syncStormDetails);
+  syncStormDetails();
+
+    /* ================= v5: original continuous playback core (same player semantics as the typhoon collection; the demo only keeps the UI shell) ================= */
+    var TPL = {
+      t: 0, dur: 24, anchors: null, rec: null, peakKt: 0, peakP: 1010, days: 5,
+      msPerKt: 0.514, playing: false, raf: 0, lastTs: 0, nextNote: 0, lastKt: 0,
+      peakHit: false, lfFired: {}, lfIdx: 0, stageIdx: -1, cloudBand: -1,
+      load: function(cur){
+        this.pause();
+        this.t = 0; this.peakHit = false; this.lfFired = {}; this.lfIdx = 0;
+        this.stageIdx = -1; this.cloudBand = -1; this.nextNote = 0; this.lastKt = 0;
+        var rec = null;
+        if (cur && cur.real) rec = curRec();
+        else if (cur && cur.tcRec) rec = cur.tcRec;
+        this.rec = rec;
+        if (rec && rec.kt){
+          this.anchors = buildAnchors(rec); this.peakKt = rec.kt; this.peakP = rec.peakP;
+          this.days = rec.days || 5; this.msPerKt = rec.peakKmh / rec.kt / 3.6;
+        } else {
+          var mx = 10, mp = 1010;
+          if (cur && cur.stages) cur.stages.forEach(function(s){ mx = Math.max(mx, s.wind); mp = Math.min(mp, s.pres); });
+          var kt0 = Math.round(mx * 1.944);
+          this.anchors = buildAnchors({ no: "x", kt: kt0, days: 5 });
+          this.peakKt = kt0; this.peakP = mp; this.days = 5; this.msPerKt = 1 / 1.944;
+        }
+        this.dur = Math.max(15, Math.min(30, 13 + this.days * 0.95));
+        hideLfPop();
+        this.render();
+      },
+      presAt: function(kt){ return Math.round(1012 - (1012 - this.peakP) * Math.pow(Math.min(1, kt / Math.max(1, this.peakKt)), 1.3)); },
+      play: function(){
+        if (!this.anchors) return;
+        AudioEngine.init();
+        if (AudioEngine.ctx && AudioEngine.ctx.state === "suspended") AudioEngine.ctx.resume();
+        if (this.t >= 1){ this.seek(0); this.peakHit = false; }
+        this.playing = true; state.playing = true; this.lastTs = performance.now();
+        var self = this;
+        cancelAnimationFrame(this.raf);
+        this.raf = requestAnimationFrame(function(ts){ self.frame(ts); });
+      },
+      pause: function(){
+        this.playing = false;
+        cancelAnimationFrame(this.raf);
+        try{ AudioEngine.silenceWeather(); }catch(e){}
+      },
+      seek: function(nt){
+        nt = Math.max(0, Math.min(1, nt));
+        var prev = this.t; this.t = nt;
+        if (this.rec){
+          var lfs = getLandfalls(this.rec), self = this;
+          lfs.forEach(function(lf){
+            if (lf.t > nt) delete self.lfFired[lf.t];
+            else if (prev < lf.t && nt >= lf.t && !self.lfFired[lf.t]){ self.lfFired[lf.t] = 1; strikeLandfallFx(lf); }
+          });
+        }
+        this.render();
+      },
+      frame: function(ts){
+        if (!this.playing) return;
+        var dt = Math.min(0.05, (ts - this.lastTs) / 1000); this.lastTs = ts;
+        this.t += dt / this.dur;
+        if (this.t >= 1){
+          this.t = 1; this.render(); this.pause(); AudioEngine.silenceWeather();
+          state.playing = false;
+          document.body.classList.remove("playing");
+          $("stageBox").classList.remove("playing");
+          $("playBtn").textContent = "▶";
+          return;
+        }
+        var kt = windAt(this.anchors, this.t);
+        var prev = windAt(this.anchors, Math.max(0, this.t - dt / this.dur));
+        var beforeT = Math.max(0, this.t - dt / this.dur);
+        this.render();
+        if (this.rec){
+          var self = this;
+          getLandfalls(this.rec).forEach(function(lf){
+            if (!self.lfFired[lf.t] && beforeT < lf.t && self.t >= lf.t){
+              self.lfFired[lf.t] = 1; strikeLandfallFx(lf);
+              $("strikeNote").textContent = "🔔 Landfall right now -- " + lf.place;
+            }
+          });
+        }
+        AudioEngine.setWeather(kt);
+        var presNow = this.presAt(kt), now = ts / 1000;
+        if (AudioEngine.ctx && now >= this.nextNote){
+          var rate = Math.abs(kt - prev) / Math.max(dt, 0.001);
+          AudioEngine.note(kt, presNow, false);
+          this.nextNote = now + Math.max(0.17, 0.52 - Math.min(0.34, rate * 0.006));
+        }
+        if (!this.peakHit && kt >= this.peakKt * 0.985){
+          this.peakHit = true;
+          AudioEngine.note(kt, presNow, true);
+          if (kt >= 90) setTimeout(function(){ AudioEngine.thunder(0.7); }, 350);
+        }
+        if (kt >= 108 && Math.random() < dt * 0.16) AudioEngine.thunder(0.4 + kt / 300);
+        this.lastKt = kt;
+        var self2 = this;
+        this.raf = requestAnimationFrame(function(nts){ self2.frame(nts); });
+      },
+      render: function(){
+        var cur = state.current; if (!cur || !this.anchors) return;
+        var kt = windAt(this.anchors, this.t);
+        var ms = kt * this.msPerKt;
+        $("chipWind").textContent = Math.round(ms);
+        $("chipPres").textContent = this.presAt(kt);
+        $("chipBpm").textContent = Math.min(this.days, Math.floor(this.t * this.days) + 1);
+        var du = $("chipDayUnit"); if (du) du.textContent = "/ " + this.days + " days";
+        var scale = 0.78 + (ms - 10) / 45 * 0.42;
+        $("spiralBox").style.transform = "scale(" + scale.toFixed(2) + ")";
+        $("spiralRotor").style.animationDuration = Math.max(2.2, 13 - ms * 0.21).toFixed(1) + "s";
+        var stIdx = Math.min(4, Math.floor(this.t * 5));
+        if (stIdx !== this.stageIdx){
+          this.stageIdx = stIdx; state.stage = stIdx;
+          var phaseAnchors = this.anchors;
+          document.querySelectorAll("#demoPathSvg .phase-grade-icon").forEach(function(image, i){
+            image.setAttribute("href", iconFile(i === 4 ? "rem" : catFromKt(windAt(phaseAnchors, i / 5))));
+          });
+          var st = cur.stages[stIdx];
+          if (st){ $("narration").textContent = st.text; $("eyeLabel").textContent = st.eye; }
+          document.querySelectorAll(".dot").forEach(function(d, di){ d.classList.toggle("now", di === stIdx); d.classList.toggle("done", di < stIdx); });
+          document.querySelectorAll(".dot-wrap").forEach(function(w, wi){ w.classList.toggle("now", wi === stIdx); });
+          document.querySelectorAll(".path-stage").forEach(function(g){ g.classList.toggle("now", parseInt(g.getAttribute("data-pstage"), 10) === stIdx); });
+        }
+        var band = Math.floor(this.t * 20);
+        if (band !== this.cloudBand){ this.cloudBand = band; updateRealViews(); }
+        drawDemoCurve();
+      }
+    };
+
+    /* ================= v4: typhoon-collection engine and data (ported verbatim) ================= */
+    var CAT_LABEL = {"l":"Tropical Disturbance","d":"Tropical Depression","s":"Tropical Storm","1":"Category 1 Typhoon","2":"Category 2 Typhoon","3":"Category 3 Typhoon","4":"Category 4 Typhoon","5":"Category 5 Super Typhoon","rem":"Remnant Low"};
+    var MONTH_HINTS = {
+      1:"January is deep winter -- sea temperatures in the Northwest Pacific are at their lowest and cold air is strong, so typhoons rarely form, and the few that do tend to stay weak. This year's Nokaen is a good example -- it only peaked at 75 km/h.",
+      2:"February is one of the quietest months of the year, with the fewest storms forming. This year's Penha spun around near the Philippines for a few days and then fell apart.",
+      3:"Sea temperatures start to creep back up in March, but typhoons are still rare, and the ones that do form tend to be short-lived tropical storms -- this year's Nuri, for example, lasted only 3 days.",
+      4:"April occasionally throws up a big one: this year's Sinlaku shot straight to Category 5 super typhoon strength at 160 kt, the year's first super typhoon.",
+      5:"May is when the season starts warming up -- more storms form, at moderate strength; the long-lived Hagupit formed in May.",
+      6:"June brings early summer, and the sea is finally warm enough for strong typhoons to show up -- both Mekkhala and Bavi formed in June.",
+      7:"July is peak season: lots of storms, high intensity, frequent landfalls. Bavi's peak and Dolphin's formation both fall in July.",
+      8:"August is the busiest month of the year -- this year alone it produced 10 typhoons, Saudel among them.",
+      9:"September's autumn typhoons are nothing to underestimate: both Surigae and Choi-wan formed in September and reached Category 4 or higher, and often track north to affect eastern China and Japan.",
+      10:"October is the late-season window for strong typhoons: this year's Champi (one of the year's strongest), Nolo, Koguma and In-fa all came out of October.",
+      11:"By November the typhoon season is winding down -- fewer storms form, tracks skew toward lower latitudes and the South China Sea, and overall intensity drops off.",
+      12:"December is winter, and typhoons are very rare; the occasional one that forms over low-latitude warm water rarely grows very large."
+    };
+    var MONTH_FULL = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var MONTH_DOWN = {1:0.55, 2:0.55, 3:0.35, 4:0.35, 5:0.2, 6:0.2, 7:0, 8:0, 9:0, 10:0, 11:0.2, 12:0.55};
+    var CAT_ORDER = ["l","d","s","1","2","3","4","5"];
+    var CAT_KT_RANGE = {"l":[16,27],"d":[28,33],"s":[36,62],"1":[66,80],"2":[85,94],"3":[98,110],"4":[116,134],"5":[140,168]};
+    var NAME_POOL = ["Little Whirl","Admiral Sea","Blue Whale","Stormeye","Wave Candy","Deepsea Drummer","Cloud Rider","Boomerang","Big Turbine","Galaxy Wind"];
+    var BOUNDS = { latMin:-39, latMax:45, lonMin:100, lonMax:180 };
+    var VIEW = { lonMin:96, lonMax:184, latMin:-42, latMax:49 };
+    var LAND = [
+      [[100,6],[101,8],[100.4,11],[102,12.5],[103.5,10.4],[105,8.7],[106.8,10.4],[109,11],[109.3,13],[106.5,16.5],[108.2,18],[110.1,20.1],[108,21.4],[110.2,21.5],[111.8,21.8],[113.5,22.2],[115,22.7],[117,23.3],[118.2,24.6],[119.7,25.8],[120.2,27.3],[121.2,28.3],[121.8,29.9],[121.9,31.2],[120.3,32.4],[119.3,34.3],[120.9,35.4],[122.5,37.4],[122.4,38.9],[121,39.1],[118.9,38.6],[117.8,39.1],[119,39.9],[121.7,40.9],[124.4,39.9],[126.2,41],[128,42.3],[130.6,42.3],[132.9,43.3],[135.5,44.7],[137.8,45.5],[140,46.5],[141.5,48.5],[141,49],[96,49],[96,30],[97.6,16],[98.5,13]],
+      [[126.3,41],[129.4,40.2],[129.3,38.2],[128.5,38.3],[127.4,36.8],[126.3,36.9],[126.1,37.7],[124.8,37.7],[125.4,38.6],[126.4,39.8]],
+      [[140.4,42.9],[140.2,43.3],[141.6,45.4],[143.2,44.1],[144.4,44],[145.8,43.4],[145.2,43.2],[143.7,42],[142,42.3],[140.9,42.6]],
+      [[140.4,41.3],[141.4,40.9],[141.5,39.9],[141,38.3],[140.9,37],[140,35.7],[140.6,35],[139.8,34.6],[138.9,35.1],[138,34.7],[136.9,35.3],[136.8,34.6],[135.8,34.7],[135.5,34],[134,34.2],[132.1,34.2],[131,34],[130.9,33.9],[130.2,32.8],[130.7,31.4],[131.7,31.4],[131.9,32.6],[133,33.4],[134.2,33.4],[135.2,33.4],[135.8,34.6],[137,34.7],[138.3,34.6],[139.7,35.3],[140.3,35.9],[139.9,37.8],[139.8,39.8]],
+      [[120.1,25.2],[121,25.3],[121.94,25],[121.9,24.2],[121.3,22.6],[120.8,21.9],[120.1,22.5],[119.9,23.5]],
+      [[108.9,19.9],[110,19.9],[110.6,20],[110.5,19.2],[109.5,18.4],[108.8,19.2]],
+      [[119.9,18.4],[120.3,18.2],[121.7,18.3],[122.2,17.2],[121.9,16],[122.1,14.5],[121.6,13.7],[120.6,13.6],[120,14.5],[119.9,16.2]],
+      [[122,7.8],[122.5,8.9],[124,9.8],[126.4,9.7],[126.5,8.5],[126.2,7.2],[124.5,6.1],[123,6.4],[122.1,6.9]],
+      [[109.6,1.2],[110.3,2.9],[113,4.4],[116.3,6.9],[119,3.5],[117.9,0.8],[117,-2.8],[114,-3.4],[110,-2.3],[109.2,-0.5]],
+      [[119,0.5],[120.2,1.3],[120.6,0],[119.9,-1.2],[119.4,-0.5]],
+      [[130.9,-0.9],[132.5,-0.5],[136,-1.6],[138.5,-1.9],[141,-2.7],[143.5,-3.5],[146,-5.8],[147.8,-9.4],[146.3,-9.9],[143,-8.2],[140,-7.5],[136.6,-3.9],[133,-3.8],[131.2,-2.6]],
+      [[105.3,-5.9],[108,-6.8],[111,-6.9],[114.4,-7.6],[114.6,-8.7],[112,-8.3],[108.3,-7.8],[105.8,-6.9]],
+      [[100,1.5],[102.5,-1.5],[104.6,-2.9],[105.8,-5.9],[104,-5.5],[101.5,-2],[99.8,0.8]],
+      [[113.6,-21.7],[113.2,-24],[113.1,-26.5],[114.9,-31.5],[115.1,-33.6],[117.9,-35.1],[122,-34],[124.5,-33],[129,-31.7],[132,-32],[133.7,-32.3],[135.9,-34.9],[137.8,-35.1],[139.7,-37],[140.9,-38.3],[143.6,-38.4],[145.4,-38.3],[147.9,-37.8],[149.9,-37.2],[150.7,-35.1],[151.3,-33.9],[153.2,-30.9],[153.6,-28.6],[153.3,-25.8],[151.3,-23.4],[150.8,-22.3],[149.2,-21.1],[146.3,-19.3],[143.6,-14.5],[142.6,-10.7],[141.9,-13],[142.2,-17.2],[140.9,-17.6],[139,-17.7],[136.7,-15.5],[136,-15],[135.5,-12.3],[136.8,-11.8],[135.6,-11.3],[132.6,-11.3],[132.5,-12.4],[130.2,-12.4],[129.5,-14.9],[128.2,-13.8],[126.5,-13.9],[125.2,-16.4],[122.2,-17],[119.8,-19.9],[118.5,-20.4],[116.8,-20.6],[114.9,-21.6]]
+    ];
+    var LF_VERIFIED_VIDEOS = {
+      "2604":[
+        { embed:"https://www.youtube.com/embed/VCBpF9oMbAM", cap:"Footage 1 · Saipan/Tinian landfall" },
+        { embed:"https://www.youtube.com/embed/v-QAzz6h0uk", cap:"Footage 2 · Saipan/Tinian landfall" },
+        { embed:"https://www.youtube.com/embed/UFKupYfuVhM", cap:"Footage 3 · Saipan/Tinian landfall" }
+      ]
+    };
+    var LF_EXTRA_LINK = {
+      "2604":{ url:"https://www.youtube.com/watch?v=1SP21d2r2a4", label:"Saipan footage compilation (YouTube) ↗" },
+      "2612":{ url:"https://www.snm0516.aisee.tv/video/BV1ig336sEnS/", label:"Watch Huizhou footage · Jul 26" }
+    };
+    var LF_SEARCH_QUERY = {
+      "2602":"Typhoon Penha landfall Philippines",
+      "2604":"Typhoon Sinlaku landfall Saipan Tinian",
+      "2610":"Typhoon Maysak landfall Hainan",
+      "2612":"Typhoon Noul landfall Huidong",
+      "2613":"Typhoon Dolphin landfall Zhejiang"
+    };
+    var TILE_CACHE = {}, tileVersion = 0, tileRedrawQueued = false;
+    var ICONS = ["l","d","s","1","2","3","4","5","rem"];
+    function iconFile(k){ return "./assets/typhoon-icons/icon-" + (k==="rem" ? "remnant" : k) + ".png"; }
+    var categoryImages = {};
+    function categoryImage(category){
+      if (!categoryImages[category]){
+        var image = new Image();
+        image.onload = function(){
+          if (typeof drawDemoTrack === "function" && typeof state !== "undefined" && state.current) drawDemoTrack();
+          if (typeof drawTrackMap === "function" && typeof player !== "undefined" && player.storm) drawTrackMap(player);
+        };
+        image.src = iconFile(category); categoryImages[category] = image;
+      }
+      return categoryImages[category];
+    }
+    function drawCategoryIcon(ctx, x, y, category, size, opacity){
+      var image = categoryImage(category);
+      ctx.save(); ctx.globalAlpha = opacity;
+      ctx.fillStyle = "rgba(8,20,30,.9)";
+      ctx.beginPath(); ctx.arc(x, y, size / 2, 0, Math.PI * 2); ctx.fill();
+      if (image.complete && image.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
+      ctx.restore();
+    }
+    function drawTrackGrades(ctx, projection, points, anchors, time, width, height){
+      var current = trackPos(points, time);
+      var category = time >= 1 ? "rem" : catFromKt(windAt(anchors, time));
+      drawCategoryIcon(ctx, Math.max(20, Math.min(width - 20, projection.x(current[0]))), Math.max(20, Math.min(height - 20, projection.y(current[1]))), category, 40, 1);
+      return category;
+    }
+
+    function catFromKt(kt){
+      if (kt < 28) return "l";
+      if (kt < 34) return "d";
+      if (kt < 64) return "s";
+      if (kt < 83) return "1";
+      if (kt < 96) return "2";
+      if (kt < 113) return "3";
+      if (kt < 137) return "4";
+      return "5";
+    }
+    function isDark(){ return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+    function mercY(lat){
+      var r = Math.max(-85, Math.min(85, lat)) * Math.PI / 180;
+      return Math.log(Math.tan(Math.PI / 4 + r / 2));
+    }
+    function proj(W, H, view){
+      var v = view || VIEW;
+      var lonC = (v.lonMin + v.lonMax) / 2, mC = (mercY(v.latMin) + mercY(v.latMax)) / 2;
+      var k = Math.min(W / ((v.lonMax - v.lonMin) * Math.PI / 180), H / (mercY(v.latMax) - mercY(v.latMin)));
+      return {
+        x:function(lon){ return W / 2 + (lon - lonC) * Math.PI / 180 * k; },
+        y:function(lat){ return H / 2 - (mercY(lat) - mC) * k; },
+        lon:function(px){ return lonC + (px - W / 2) / k * 180 / Math.PI; },
+        lat:function(py){ return Math.atan(Math.sinh(mC - (py - H / 2) / k)) * 180 / Math.PI; }
+      };
+    }
+    function tileImg(z, x, y){
+      var key = z + "/" + x + "/" + y, im = TILE_CACHE[key];
+      if (im) return im;
+      im = TILE_CACHE[key] = new Image();
+      im.onload = function(){ im._ok = true; tileVersion++; scheduleMapRedraw(); };
+      im.onerror = function(){ im._err = true; };
+      im.src = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/" + z + "/" + y + "/" + x;
+      return im;
+    }
+    function drawSatTiles(ctx, W, H, p){
+      var lonL = p.lon(0), lonR = p.lon(W), latT = p.lat(0), latB = p.lat(H);
+      var pxPerDeg = Math.abs(p.x(lonL + 1) - p.x(lonL));
+      var z = Math.round(Math.log(pxPerDeg * 360 / 256) / Math.LN2);
+      z = Math.max(2, Math.min(8, z));
+      var n = Math.pow(2, z), tx, ty;
+      function latToTy(lat){
+        var r = Math.max(-85, Math.min(85, lat)) * Math.PI / 180;
+        return Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n);
+      }
+      function tyToLat(tyy){ return Math.atan(Math.sinh(Math.PI * (1 - 2 * tyy / n))) * 180 / Math.PI; }
+      var x0 = Math.max(0, Math.floor((lonL + 180) / 360 * n)), x1 = Math.min(n - 1, Math.floor((lonR + 180) / 360 * n));
+      var y0 = Math.max(0, latToTy(latT)), y1 = Math.min(n - 1, latToTy(latB));
+      for (tx = x0; tx <= x1; tx++){
+        for (ty = y0; ty <= y1; ty++){
+          var im = tileImg(z, tx, ty);
+          if (!im._ok) continue;
+          var dx = p.x(tx / n * 360 - 180), dx2 = p.x((tx + 1) / n * 360 - 180);
+          var dy = p.y(tyToLat(ty)), dy2 = p.y(tyToLat(ty + 1));
+          ctx.drawImage(im, dx, dy, dx2 - dx + 1, dy2 - dy + 1);
+        }
+      }
+    }
+    function latToTy(lat){
+        var r = Math.max(-85, Math.min(85, lat)) * Math.PI / 180;
+        return Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n);
+      }
+    function tyToLat(tyy){ return Math.atan(Math.sinh(Math.PI * (1 - 2 * tyy / n))) * 180 / Math.PI; }
+    function paintBasemap(ctx, W, H, view){
+      var dark = isDark(), p = proj(W, H, view), i, la;
+      /* ocean fill + line-drawn coastline fallback (fully covered once the satellite tiles finish loading) */
+      var g = ctx.createLinearGradient(0, 0, 0, H);
+      if (dark){ g.addColorStop(0, "#0d3049"); g.addColorStop(1, "#081f33"); }
+      else { g.addColorStop(0, "#7fa8bd"); g.addColorStop(1, "#5d8aa5"); }
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = dark ? "#24455a" : "#a9bf9d";
+      ctx.strokeStyle = dark ? "#3d6a84" : "#7d9c84"; ctx.lineWidth = 1.2;
+      LAND.forEach(function(poly){
+        ctx.beginPath();
+        poly.forEach(function(pt, j){ if (j === 0) ctx.moveTo(p.x(pt[0]), p.y(pt[1])); else ctx.lineTo(p.x(pt[0]), p.y(pt[1])); });
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      });
+      /* real satellite imagery base layer (Esri World Imagery tiles -- coastlines follow the real imagery) */
+      drawSatTiles(ctx, W, H, p);
+      /* lat/lon grid (a faint layer on top of the imagery) */
+      ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,.20)";
+      ctx.fillStyle = "rgba(255,255,255,.78)"; ctx.font = "10px Archivo, sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,.55)"; ctx.shadowBlur = 3;
+      for (i = 100; i <= 180; i += 20){
+        ctx.beginPath(); ctx.moveTo(p.x(i), 0); ctx.lineTo(p.x(i), H); ctx.stroke();
+        ctx.fillText(i + "°E", p.x(i) + 3, H - 5);
+      }
+      [40, 25, 10, -10, -25].forEach(function(v){
+        ctx.beginPath(); ctx.moveTo(0, p.y(v)); ctx.lineTo(W, p.y(v)); ctx.stroke();
+        ctx.fillText(Math.abs(v) + "°" + (v >= 0 ? "N" : "S"), 4, p.y(v) - 3);
+      });
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(0, p.y(0)); ctx.lineTo(W, p.y(0)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillText("Equator", 4, p.y(0) - 3);
+      /* place names */
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      ctx.font = "700 12px 'Noto Sans SC', sans-serif";
+      ctx.fillText("China", p.x(107), p.y(33.5));
+      ctx.fillText("Japan", p.x(143.5), p.y(36.5));
+      ctx.fillText("Philippines", p.x(123.5), p.y(12));
+      ctx.fillText("Australia", p.x(127), p.y(-27));
+      /* imagery-source credit, placed in the bottom right so it does not crowd the north-limit label at the top */
+      ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.font = "10px 'Noto Sans SC', sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText("Satellite imagery © Esri World Imagery", W - 6, H - 6);
+      ctx.textAlign = "left";
+      ctx.shadowBlur = 0;
+      /* hard-boundary dashed box (dark stroke underneath so it stays visible over the satellite imagery) */
+      var bx0 = p.x(BOUNDS.lonMin), bx1 = p.x(BOUNDS.lonMax), by0 = p.y(BOUNDS.latMax), by1 = p.y(BOUNDS.latMin);
+      ctx.setLineDash([7, 6]);
+      ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.lineWidth = 4;
+      ctx.strokeRect(bx0, by0, bx1 - bx0, by1 - by0);
+      ctx.strokeStyle = "#3fd2e0"; ctx.lineWidth = 2;
+      ctx.strokeRect(bx0, by0, bx1 - bx0, by1 - by0);
+      ctx.setLineDash([]);
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 3;
+      ctx.fillStyle = "#7fe3ee"; ctx.font = "700 11px 'Noto Sans SC', sans-serif";
+      ctx.fillText("North limit 45°N", bx0 + 6, by0 + 15);
+      ctx.fillText("South limit 39°S", bx0 + 6, by1 - 7);
+      /* red line marking the northern tip of Hokkaido */
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(0,0,0,.4)"; ctx.lineWidth = 4.5;
+      ctx.beginPath(); ctx.moveTo(p.x(128), p.y(45.4)); ctx.lineTo(p.x(146), p.y(45.4)); ctx.stroke();
+      ctx.strokeStyle = "#1f9bb8"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(p.x(128), p.y(45.4)); ctx.lineTo(p.x(146), p.y(45.4)); ctx.stroke();
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 3;
+      ctx.fillStyle = "#33b8d4"; ctx.font = "700 11px 'Noto Sans SC', sans-serif";
+      ctx.fillText("Northern tip of Hokkaido ≈ 45.4°N", p.x(128), p.y(45.4) - 6);
+      ctx.shadowBlur = 0;
+    }
+    function buildAnchors(storm){
+      if (storm.no === "2632"){ /* Cempaka's full life (JMA real-track anchors): formed as a tropical
+           depression on Nov 5; about 35 kt when named on Nov 7; 70 kt on Nov 8; dropped to 65 kt at
+           06:00 UTC on Nov 9, then back up to 75 kt by 21:00 UTC; peaked at 85 kt (155 km/h, 955 hPa)
+           on Nov 10; dropped to 70 kt at 21:00 UTC on Nov 10; weakened to a severe tropical storm at
+           60 kt (985 hPa, 29.2°N, 151.0°E) at 09:00 UTC on Nov 11; turned extratropical at
+           12:00 UTC that same day */
+        return [[0,16],[0.14,24],[0.30,35],[0.46,70],[0.64,65],[0.74,75],[0.82,85],[0.89,70],[0.96,60],[1,26]];
+      }
+      if (storm.no === "2609"){ /* Bavi: key anchors from the JTWC best track (eyewall-replacement dip, peak at Rota, 70 kt landfall on Zhejiang) */
+        return [[0,18],[0.10,45],[0.20,90],[0.27,143],[0.32,135],[0.40,155],[0.46,150],[0.56,128],[0.66,110],[0.74,92],[0.80,70],[0.87,45],[0.94,25],[1,12]];
+      }
+      if (storm.no === "2628"){ /* Nolo: peaked right as it crossed into this basin, so it does not
+           follow the generic life curve. On Oct 4 it crossed the International Date Line into this
+           basin as a Category 3 hurricane (115 mph per the NHC that day; this page caps its peak at
+           110 kt), and the JMA peak within this basin (175 km/h, 950 hPa) sits right at that crossing;
+           after that it weakened monotonically: severe tropical storm on Oct 7, tropical storm on Oct
+           9, dissipated Oct 11, never reintensifying. Its true lifetime peak (Category 4, 155 mph,
+           south of Hawaii on Sep 28) was east of the Date Line, off this page’s map, and is not
+           part of the playback here. */
+        return [[0,110],[0.10,104],[0.22,90],[0.34,74],[0.44,58],[0.58,47],[0.70,39],[0.83,30],[0.93,20],[1,12]];
+      }
+      var p = storm.kt, strong = p >= 96;
+      var a = [[0,16],[0.07,26],[0.16,38],[0.28,p*0.62],[0.40,p*0.88],[0.50,p]];
+      if (strong && storm.days >= 9){ a.push([0.60,p*0.86]); a.push([0.68,p*0.95]); } /* eyewall-replacement dip and re-intensification */
+      a.push([0.78,p*0.66],[0.88,Math.max(30,p*0.34)],[0.95,22],[1,12]);
+      return a;
+    }
+    function windAt(anchors, t){
+      for (var i = 0; i < anchors.length-1; i++){
+        var x0 = anchors[i][0], y0 = anchors[i][1], x1 = anchors[i+1][0], y1 = anchors[i+1][1];
+        if (t >= x0 && t <= x1){
+          var f = (t-x0)/Math.max(1e-6,(x1-x0));
+          f = f*f*(3-2*f);
+          return y0 + (y1-y0)*f;
+        }
+      }
+      return anchors[anchors.length-1][1];
+    }
+    function lfSearchUrl(storm, lf){
+      var q = LF_SEARCH_QUERY[storm.no];
+      if (!q){
+        if (storm.no === "2609") q = (lf.t < 0.6) ? "Typhoon Bavi landfall Rota" : "Typhoon Bavi landfall Yuhuan Zhejiang";
+        else if (storm.no === "2618") q = "Typhoon Saudel landfall Zhejiang Fujian";
+        else q = "Typhoon " + storm.cn + " landfall " + (lf.short && lf.short !== "Landfall point" ? lf.short : "");
+      }
+      return "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+    }
+    function sizeCanvas(cv){
+      var dpr = window.devicePixelRatio || 1, r = cv.getBoundingClientRect();
+      var w = Math.max(50, Math.round(r.width)), h = Math.max(50, Math.round(r.height));
+      if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+      var ctx = cv.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx:ctx, w:w, h:h };
+    }
+    function drawMakerMap(){
+      if (!mapCv) return;
+      var s = sizeCanvas(mapCv), ctx = s.ctx, p = proj(s.w, s.h);
+      paintBasemap(ctx, s.w, s.h);
+      if (selBox){
+        var bx = p.x(selBox.lonMin), by = p.y(selBox.latMax);
+        ctx.fillStyle = "rgba(238,58,36,.10)"; ctx.strokeStyle = "#1f9bb8"; ctx.lineWidth = 2;
+        ctx.fillRect(bx, by, p.x(selBox.lonMax) - bx, p.y(selBox.latMin) - by);
+        ctx.strokeRect(bx, by, p.x(selBox.lonMax) - bx, p.y(selBox.latMin) - by);
+      }
+      if (dragRect){
+        ctx.fillStyle = "rgba(238,58,36,.10)"; ctx.strokeStyle = "#1f9bb8"; ctx.lineWidth = 2;
+        ctx.fillRect(dragRect.x, dragRect.y, dragRect.w, dragRect.h);
+        ctx.strokeRect(dragRect.x, dragRect.y, dragRect.w, dragRect.h);
+      }
+      if (mapSpawn){
+        ctx.strokeStyle = isDark() ? "#7fd4de" : "#0b7d8c"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        mapSpawn.path.forEach(function(pt, j){ if (j === 0) ctx.moveTo(p.x(pt[0]), p.y(pt[1])); else ctx.lineTo(p.x(pt[0]), p.y(pt[1])); });
+        ctx.stroke(); ctx.setLineDash([]);
+        var mx = p.x(mapSpawn.lon), my = p.y(mapSpawn.lat);
+        ctx.fillStyle = "#1f9bb8";
+        ctx.beginPath(); ctx.arc(mx, my, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = isDark() ? "#e9f3f8" : "#0e2231"; ctx.font = "700 12px 'Noto Sans SC', sans-serif";
+        ctx.fillText("Spawn point of “" + mapSpawn.name + "”", Math.min(s.w - 120, mx + 10), Math.max(14, my - 8));
+      }
+    }
+    function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+    function fmtLat(lat){ return (Math.abs(lat)).toFixed(1) + "°" + (lat >= 0 ? "N" : "S"); }
+    function fmtLon(lon){ return lon.toFixed(1) + "°E"; }
+    var AudioEngine = {
+      ctx:null, master:null, bus:null, comp:null, started:false, userVol:0.45,
+      layers:{ music:true, wind:true, rain:true, thunder:true },
+      rainGain:null,
+      windTremGain:null, windTremFilter:null,
+      fluteOsc:null, fluteGain:null, rainRate:0, _lastStrike:-9, _rainTimer:0,
+      verb:null, _musTimer:0, _musActive:false, _musKt:0, _musPres:1012,
+      _chordIdx:0, _chordNext:0, _pads:[], _pulseNext:0, _rollNext:0, _climax:0,
+      init:function(){
+        if (this.ctx) return;
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        var ctx = this.ctx = new AC();
+        /* 耳机保护链：所有声音 -> bus -> 压缩器 -> 限幅增益 -> master -> 扬声器
+           压缩器把雷声/巅峰的突发大音量压平，master 默认只有 0.45，开满滑杆也封顶在安全范围 */
+        this.bus = ctx.createGain(); this.bus.gain.value = 0.75;
+        this.comp = ctx.createDynamicsCompressor();
+        this.comp.threshold.value = -20; this.comp.knee.value = 24;
+        this.comp.ratio.value = 12; this.comp.attack.value = 0.004; this.comp.release.value = 0.28;
+        var limiter = ctx.createGain(); limiter.gain.value = 0.82;
+        this.master = ctx.createGain();
+        this.master.gain.value = 0;
+        this.master.gain.setTargetAtTime(this.userVol * 0.55, ctx.currentTime, 0.4);
+        this.bus.connect(this.comp); this.comp.connect(limiter); limiter.connect(this.master); this.master.connect(ctx.destination);
+        var nb = this.noiseBuffer();
+        /* 雨声：噪声 → 高通 + 细密颗粒感 */
+        var rsrc = ctx.createBufferSource(); rsrc.buffer = nb; rsrc.loop = true; rsrc.playbackRate.value = 1.7;
+        var rhp = ctx.createBiquadFilter(); rhp.type = "highpass"; rhp.frequency.value = 1600;
+        this.rainGain = ctx.createGain(); this.rainGain.gain.value = 0;
+        rsrc.connect(rhp); rhp.connect(this.rainGain); this.rainGain.connect(this.bus);
+        rsrc.start();
+        /* 风声·弦乐震音：噪声 → 带通 → 持续增益。不再用 LFO 调制增益——
+           那种快速抖动听起来一顿一顿、断断续续；增益与音区只在 setWeather
+           里以长平滑跟随风速，风声全程连绵不断 */
+        var tsrc = ctx.createBufferSource(); tsrc.buffer = nb; tsrc.loop = true; tsrc.playbackRate.value = 0.9;
+        this.windTremFilter = ctx.createBiquadFilter(); this.windTremFilter.type = "bandpass"; this.windTremFilter.frequency.value = 800; this.windTremFilter.Q.value = 1.6;
+        this.windTremGain = ctx.createGain(); this.windTremGain.gain.value = 0;
+        tsrc.connect(this.windTremFilter); this.windTremFilter.connect(this.windTremGain); this.windTremGain.connect(this.bus);
+        tsrc.start();
+        /* 风声·长笛气声：带颤音的正弦，强风时才飘在震音上面 */
+        this.fluteOsc = ctx.createOscillator(); this.fluteOsc.type = "sine"; this.fluteOsc.frequency.value = 740;
+        var vib = ctx.createOscillator(); vib.frequency.value = 5.2;
+        var vibG = ctx.createGain(); vibG.gain.value = 4;
+        vib.connect(vibG); vibG.connect(this.fluteOsc.frequency);
+        this.fluteGain = ctx.createGain(); this.fluteGain.gain.value = 0;
+        this.fluteOsc.connect(this.fluteGain); this.fluteGain.connect(this.bus);
+        this.fluteOsc.start(); vib.start();
+        /* 雨声调度器：每 130ms 往前排一小批雨滴音符（密度由 rainRate 决定） */
+        var self = this;
+        this._rainTimer = setInterval(function(){ self.scheduleRain(); }, 130);
+        /* 混响：程序生成的衰减噪声脉冲响应，给旋律与和声垫留尾巴衔接 */
+        this.verb = ctx.createConvolver(); this.verb.buffer = this.verbImpulse();
+        var vg = ctx.createGain(); vg.gain.value = 0.9;
+        this.verb.connect(vg); vg.connect(this.bus);
+        /* 音乐调度器：和声垫换和弦、低音脉冲、高潮滚奏都排在这里（每 180ms 往前排） */
+        this._musTimer = setInterval(function(){ self.musicTick(); }, 180);
+        this.started = true;
+      },
+      noiseBuffer:function(){
+        var ctx = this.ctx, len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) d[i] = Math.random()*2-1;
+        return buf;
+      },
+      setVolume:function(v){
+        this.userVol = Math.max(0, Math.min(1, v));
+        if (!this.ctx || !this.master) return;
+        /* 滑杆 100% 也只映射到 0.55 的实际增益，避免开满炸耳 */
+        this.master.gain.setTargetAtTime(this.userVol * 0.55, this.ctx.currentTime, 0.08);
+      },
+      setWeather:function(kt){
+        if (!this.ctx) return;
+        var t = this.ctx.currentTime;
+        var w = Math.pow(Math.min(1, kt/165), 1.4);
+        /* 弦乐震音：风速越大越响、音区越高；增益与音区都用 1.4 秒长平滑
+           跟随，风速变化时是缓缓推过去的，不跳、不顿 */
+        var tg = this.layers.wind ? Math.min(0.075, w * 0.08) : 0;
+        this.windTremGain.gain.setTargetAtTime(tg, t, 1.4);
+        this.windTremFilter.frequency.setTargetAtTime(620 + kt * 5.2, t, 1.4);
+        /* 长笛气声：64 kt 以上缓缓浮现（1.6 秒淡入淡出），音高随风速爬升 */
+        var fg = (this.layers.wind && kt >= 64) ? Math.min(0.012, (kt-64)/110 * 0.013) : 0;
+        this.fluteGain.gain.setTargetAtTime(fg, t, 1.6);
+        this.fluteOsc.frequency.setTargetAtTime(560 + kt * 3.1, t, 1.6);
+        /* 雨：噪声底收低，主力是 scheduleRain 排的雨滴音符 */
+        var rg = this.layers.rain ? Math.max(0, Math.min(0.03, (kt-42)/130 * 0.032)) : 0;
+        this.rainGain.gain.setTargetAtTime(rg, t, 0.18);
+        this.rainRate = this.layers.rain ? Math.max(0, Math.min(1, (kt-40)/125)) : 0;
+      },
+      silenceWeather:function(){
+        this.rainRate = 0;
+        this.stopMusic();
+        if (!this.ctx) return;
+        var t = this.ctx.currentTime;
+        this.rainGain.gain.setTargetAtTime(0, t, 0.2);
+        if (this.windTremGain){
+          this.windTremGain.gain.setTargetAtTime(0, t, 0.3);
+        }
+        if (this.fluteGain) this.fluteGain.gain.setTargetAtTime(0, t, 0.2);
+      },
+      /* 雨滴：拨弦（三角波短音）为主，偶尔一颗钢片琴（正弦长尾），
+         雨大时竖琴把 A 小调阶梯琶音扫下来 */
+      droplet:function(when, freq, vol, dur, type){
+        var ctx = this.ctx;
+        var o = ctx.createOscillator(); o.type = type || "triangle"; o.frequency.value = freq;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0, when);
+        g.gain.linearRampToValueAtTime(vol, when + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0008, when + dur);
+        o.connect(g); g.connect(this.bus);
+        o.start(when); o.stop(when + dur + 0.05);
+      },
+      scheduleRain:function(){
+        if (!this.ctx || !this.layers.rain || this.rainRate <= 0.02) return;
+        var now = this.ctx.currentTime, rate = this.rainRate, i, tt;
+        var expected = rate * 0.5 + rate * rate * 3.2; /* 每 130ms 的期望雨滴数，雨越大越密 */
+        var n = Math.floor(expected) + (Math.random() < expected % 1 ? 1 : 0);
+        if (n > 5) n = 5;
+        for (i = 0; i < n; i++){
+          tt = now + 0.02 + Math.random() * 0.12;
+          if (Math.random() < 0.16){ /* 钢片琴：高、亮、尾巴长一点 */
+            this.droplet(tt, 1900 + Math.random()*1300, 0.006 + rate*0.008, 0.34, "sine");
+          } else { /* 弦乐拨弦：水滴感的短颗粒 */
+            this.droplet(tt, 760 + Math.random()*980, 0.010 + rate*0.020, 0.055 + Math.random()*0.045, "triangle");
+          }
+        }
+        /* 竖琴琶音：雨够大时偶尔成片扫过 */
+        if (rate > 0.5 && Math.random() < 0.10){
+          var base = 440 * Math.pow(2, this.LADDER[8 + Math.floor(Math.random()*4)]/12);
+          for (i = 0; i < 6; i++){
+            this.droplet(now + 0.03 + i * 0.045, base * Math.pow(2, this.LADDER[i*2]/12), 0.013, 0.22, "sine");
+          }
+        }
+      },
+      /* 音乐：A 小调阶梯，风速定音高（阶梯保留）。三层结构：
+         铺底——弦乐长音和声垫 Am–F–C–G 循环（musicTick 调度），全程不断；
+         旋律——弦乐长音彼此重叠滑接、带混响尾，编制随等级变大：
+         3 级起加圆号，4 级起全铜管齐奏；脉冲——低音 ostinato 随风速变密变重；
+         高潮——近巅峰滚奏与音量爬升，顶点由 brassStab 铜管和弦砸下。
+         低音组（低音提琴 + 低音大管 + 大号）喂当前气压 pres：ΔP 越大音越低越重 */
+      LADDER:[0,3,5,7,10,12,15,17,19,22,24,27,29,31,34,36],
+      CHORDS:[
+        { root:55.00, tones:[110.00, 130.81, 164.81, 220.00] },  /* Am */
+        { root:43.65, tones:[87.31, 110.00, 130.81, 174.61] },   /* F */
+        { root:65.41, tones:[130.81, 164.81, 196.00, 261.63] },  /* C */
+        { root:49.00, tones:[98.00, 123.47, 146.83, 196.00] }    /* G */
+      ],
+      note:function(kt, pres, accent){
+        if (!this.ctx || !this.layers.music) return;
+        this._musActive = true; this._musKt = kt; this._musPres = pres;
+        var ctx = this.ctx, t = ctx.currentTime;
+        var idx = Math.round((kt-14)/(168-14) * (this.LADDER.length-1));
+        idx = Math.max(0, Math.min(this.LADDER.length-1, idx));
+        var freq = 110 * Math.pow(2, this.LADDER[idx]/12);
+        var dp = Math.max(0, Math.min(1, (1012 - pres)/115));
+        if (accent) this.brassStab(); /* 乐句顶点：铜管和弦砸下 */
+        /* 弦乐主奏：长音——慢起、长尾（约 2.3 秒），和下几个音符彼此重叠；
+           起音音高微微下滑到位做滑接，再送一路混响留尾，全程无空隙 */
+        var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 750 + kt*9; lp.Q.value = 0.4;
+        var sg = ctx.createGain();
+        var svol = accent ? 0.050 : 0.038;
+        sg.gain.setValueAtTime(0, t);
+        sg.gain.linearRampToValueAtTime(svol, t + 0.11);
+        sg.gain.setTargetAtTime(0.0008, t + 0.35, 0.55);
+        lp.connect(sg); sg.connect(this.bus);
+        if (this.verb){ var vs = ctx.createGain(); vs.gain.value = 0.5; sg.connect(vs); vs.connect(this.verb); }
+        [-6, 5].forEach(function(cents){
+          var o = ctx.createOscillator(); o.type = "sawtooth"; o.detune.value = cents;
+          o.frequency.setValueAtTime(freq * 0.985, t);
+          o.frequency.exponentialRampToValueAtTime(freq, t + 0.09);
+          o.connect(lp); o.start(t); o.stop(t + 2.3);
+        });
+        /* 弦乐高八度泛音：提琴的亮面，尾巴跟着主音一起拉长 */
+        var h = ctx.createOscillator(); h.type = "sine"; h.frequency.value = freq*2;
+        var hg = ctx.createGain();
+        hg.gain.setValueAtTime(accent ? 0.016 : 0.009, t);
+        hg.gain.exponentialRampToValueAtTime(0.0008, t + 1.1);
+        h.connect(hg); hg.connect(this.bus); h.start(t); h.stop(t + 1.15);
+        /* 圆号：3 级（96 kt）起加入，低八度垫底 */
+        if (kt >= 96){
+          var ho = ctx.createOscillator(); ho.type = "sawtooth"; ho.frequency.value = freq/2;
+          var hlp = ctx.createBiquadFilter(); hlp.type = "lowpass"; hlp.frequency.value = 620;
+          var hgn = ctx.createGain();
+          hgn.gain.setValueAtTime(0, t);
+          hgn.gain.linearRampToValueAtTime(0.024, t + 0.09);
+          hgn.gain.setTargetAtTime(0.0008, t + 0.3, 0.5);
+          ho.connect(hlp); hlp.connect(hgn); hgn.connect(this.bus);
+          ho.start(t); ho.stop(t + 2.0);
+        }
+        /* 全铜管齐奏：4 级（113 kt）起同音高叠入，乐队一下子变大 */
+        if (kt >= 113){
+          var blp = ctx.createBiquadFilter(); blp.type = "lowpass"; blp.frequency.value = 1050 + kt*4;
+          var bgn = ctx.createGain();
+          bgn.gain.setValueAtTime(0, t);
+          bgn.gain.linearRampToValueAtTime(accent ? 0.030 : 0.022, t + 0.06);
+          bgn.gain.setTargetAtTime(0.0008, t + 0.3, 0.45);
+          blp.connect(bgn); bgn.connect(this.bus);
+          if (this.verb){ var bvs = ctx.createGain(); bvs.gain.value = 0.3; bgn.connect(bvs); bvs.connect(this.verb); }
+          [0, 4].forEach(function(cents){
+            var bo = ctx.createOscillator(); bo.type = "sawtooth"; bo.frequency.value = freq; bo.detune.value = cents + 3;
+            bo.connect(blp); bo.start(t); bo.stop(t + 1.9);
+          });
+        }
+        /* 低音组：音高与重量都跟当前气压走（气压越低，音越往下沉、越靠前） */
+        var bf = 55 * Math.pow(2, -dp * 7 / 12);
+        var bvol = 0.028 + dp * 0.05;
+        var bg = ctx.createGain();
+        bg.gain.setValueAtTime(0, t);
+        bg.gain.linearRampToValueAtTime(bvol, t + 0.045);
+        bg.gain.setTargetAtTime(0.0008, t + 0.22, 0.2);
+        bg.connect(this.bus);
+        var b1 = ctx.createOscillator(); b1.type = "triangle"; b1.frequency.value = bf; /* 低音提琴 */
+        b1.connect(bg); b1.start(t); b1.stop(t + 0.9);
+        var b2 = ctx.createOscillator(); b2.type = "sine"; b2.frequency.value = bf; /* 大号的正弦重量 */
+        var b2g = ctx.createGain(); b2g.gain.value = 0.8;
+        b2.connect(b2g); b2g.connect(bg); b2.start(t); b2.stop(t + 0.9);
+        var b3 = ctx.createOscillator(); b3.type = "sawtooth"; b3.frequency.value = bf; /* 低音大管的芦苇感 */
+        var b3lp = ctx.createBiquadFilter(); b3lp.type = "lowpass"; b3lp.frequency.value = 240;
+        var b3g = ctx.createGain(); b3g.gain.value = 0.35;
+        b3.connect(b3lp); b3lp.connect(b3g); b3g.connect(bg);
+        b3.start(t); b3.stop(t + 0.9);
+      },
+      /* 混响脉冲响应：1.9 秒双声道衰减噪声，程序生成、无采样 */
+      verbImpulse:function(){
+        var ctx = this.ctx, len = Math.floor(ctx.sampleRate * 1.9), buf = ctx.createBuffer(2, len, ctx.sampleRate);
+        for (var ch = 0; ch < 2; ch++){
+          var d = buf.getChannelData(ch);
+          for (var i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.6);
+        }
+        return buf;
+      },
+      curChord:function(){
+        var i = this._pads.length ? (this._chordIdx + this.CHORDS.length - 1) % this.CHORDS.length : 0;
+        return this.CHORDS[i];
+      },
+      /* 和声垫一个和弦：4 个和弦音 × 两把失谐提琴，1.3 秒缓缓涨起 */
+      startChord:function(when, idx, level){
+        var ctx = this.ctx, ch = this.CHORDS[idx];
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0, when);
+        g.gain.linearRampToValueAtTime(level, when + 1.3);
+        var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 720; lp.Q.value = 0.3;
+        lp.connect(g); g.connect(this.bus);
+        if (this.verb){ var send = ctx.createGain(); send.gain.value = 0.4; g.connect(send); send.connect(this.verb); }
+        var oscs = [];
+        ch.tones.forEach(function(f){
+          [-5, 4].forEach(function(cents){
+            var o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = cents;
+            o.connect(lp); o.start(when); oscs.push(o);
+          });
+        });
+        var nodes = { gain:g, oscs:oscs, dead:0 };
+        this._pads.push(nodes);
+        return nodes;
+      },
+      releaseChord:function(nodes, when){
+        nodes.gain.gain.setTargetAtTime(0, when, 0.55);
+        nodes.oscs.forEach(function(o){ o.stop(when + 2.4); });
+        nodes.dead = when + 2.4;
+      },
+      fadeAllPads:function(){
+        if (!this.ctx) { this._pads = []; return; }
+        var now = this.ctx.currentTime;
+        this._pads.forEach(function(n){
+          try {
+            n.gain.gain.cancelScheduledValues(now);
+            n.gain.gain.setTargetAtTime(0, now, 0.18);
+            n.oscs.forEach(function(o){ o.stop(now + 0.9); });
+          } catch(e){}
+        });
+        this._pads = [];
+      },
+      stopMusic:function(){
+        this._musActive = false;
+        this.fadeAllPads();
+      },
+      /* 低音弦乐短刺：和定音鼓脉冲叠在一起，ostinato 的「弦」那一半 */
+      pulseString:function(when, freq, vol){
+        var ctx = this.ctx;
+        var o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = freq;
+        var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 300;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0, when);
+        g.gain.linearRampToValueAtTime(vol, when + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0008, when + 0.19);
+        o.connect(lp); lp.connect(g); g.connect(this.bus);
+        o.start(when); o.stop(when + 0.24);
+      },
+      /* 顶点铜管和弦：当前和弦整体高八度齐奏砸下 + 定音鼓一记，带混响尾 */
+      brassStab:function(){
+        if (!this.ctx) return;
+        var ctx = this.ctx, t = ctx.currentTime, ch = this.curChord();
+        var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1500;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.085, t + 0.06);
+        g.gain.setTargetAtTime(0.0008, t + 0.5, 0.45);
+        lp.connect(g); g.connect(this.bus);
+        if (this.verb){ var send = ctx.createGain(); send.gain.value = 0.4; g.connect(send); send.connect(this.verb); }
+        ch.tones.forEach(function(f){
+          [0, 3].forEach(function(cents){
+            var o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f * 2; o.detune.value = cents;
+            o.connect(lp); o.start(t); o.stop(t + 2.2);
+          });
+        });
+        this.thump(t, ch.root * 2, 0.20, 0.9);
+      },
+      /* 音乐调度器（每 180ms 往前排约 0.5 秒）：
+         · 和声垫每 3.4 秒换和弦，新旧重叠交接，全程不断
+         · 低音脉冲 ostinato：间隔 0.48→0.19 秒随风速变密，响度随风速与高潮涨
+         · 高潮：_climax 随风速（100 kt 起）平滑爬升，垫音量同步涨；
+           过 108 kt 后定音鼓在和弦根音上滚奏，越近顶点越密越响；
+           减弱时 _climax 回落，整层自然退下 */
+      musicTick:function(){
+        if (!this.ctx || !this._musActive) return;
+        if (!this.layers.music){ if (this._pads.length) this.fadeAllPads(); return; }
+        var now = this.ctx.currentTime;
+        var kt = this._musKt, w = Math.pow(Math.min(1, kt/165), 1.4);
+        var cT = Math.max(0, Math.min(1, (kt - 100)/65));
+        this._climax += (cT - this._climax) * 0.25;
+        var cl = this._climax;
+        this._pads = this._pads.filter(function(n){ return !n.dead || n.dead > now; });
+        if (!this._pads.length) this._chordNext = now + 0.05;
+        while (this._chordNext < now + 0.5){
+          var lvl = (0.030 + w * 0.030) * (1 + cl * 0.8);
+          var prev = this._pads[this._pads.length - 1];
+          this.startChord(this._chordNext, this._chordIdx, lvl);
+          if (prev) this.releaseChord(prev, this._chordNext + 1.6);
+          this._chordIdx = (this._chordIdx + 1) % this.CHORDS.length;
+          this._chordNext += 3.4;
+        }
+        if (kt >= 30){
+          var iv = 0.48 - Math.min(1, kt/165) * 0.29;
+          if (this._pulseNext < now) this._pulseNext = now + 0.03;
+          while (this._pulseNext < now + 0.4){
+            var pv = (0.05 + w * 0.10) * (1 + cl * 0.5);
+            var root = this.curChord().root;
+            this.thump(this._pulseNext, root * 2, pv, 0.22);
+            this.pulseString(this._pulseNext, root * 2, pv * 0.7);
+            this._pulseNext += iv;
+          }
+        }
+        if (cl > 0.55 && kt >= 108){
+          if (!this._rollNext || this._rollNext < now) this._rollNext = now + 0.02;
+          while (this._rollNext < now + 0.4){
+            var rv = 0.028 + cl * 0.05;
+            this.thump(this._rollNext, this.curChord().root * 2, rv * (0.7 + Math.random()*0.5), 0.13);
+            this._rollNext += 0.21 - cl * 0.10;
+          }
+        }
+      },
+      /* 单记鼓点（定音鼓/大鼓的皮膜声）：起音时音高微微下坠 */
+      thump:function(when, freq, vol, dur){
+        var ctx = this.ctx;
+        var o = ctx.createOscillator(); o.type = "sine";
+        o.frequency.setValueAtTime(freq * 1.25, when);
+        o.frequency.exponentialRampToValueAtTime(Math.max(24, freq), when + 0.05);
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0, when);
+        g.gain.linearRampToValueAtTime(vol, when + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0008, when + dur);
+        o.connect(g); g.connect(this.bus);
+        o.start(when); o.stop(when + dur + 0.05);
+      },
+      /* 雷声：定音鼓滚奏（滚 1.2–1.8 秒）+ 低音铜管闷吼 + 一层空气底噪。
+         关键是「滚」：和登陆的单次重击一听就能分开 */
+      thunder:function(strength){
+        if (!this.ctx || !this.layers.thunder) return;
+        var ctx = this.ctx, t = ctx.currentTime;
+        var v = 0.085 + strength*0.075;
+        var src = ctx.createBufferSource(); src.buffer = this.noiseBuffer();
+        var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 110;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(v * 0.8, t + 0.16);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + 1.7);
+        src.connect(lp); lp.connect(g); g.connect(this.bus);
+        src.start(t); src.stop(t + 1.8);
+        var rollDur = 1.2 + strength * 0.6, hits = 16, i, ht, hv;
+        for (i = 0; i < hits; i++){
+          ht = t + 0.05 + (i / hits) * rollDur * (0.75 + 0.25 * i / hits);
+          hv = v * (0.25 + 0.75 * Math.sin(Math.PI * Math.min(1, i / hits))) * 0.5;
+          this.thump(ht, 68 - i * 0.9, hv, 0.16);
+        }
+        var o = ctx.createOscillator(); o.type = "sawtooth";
+        o.frequency.setValueAtTime(55, t);
+        o.frequency.exponentialRampToValueAtTime(36, t + 1.1);
+        var olp = ctx.createBiquadFilter(); olp.type = "lowpass"; olp.frequency.value = 200;
+        var og = ctx.createGain();
+        og.gain.setValueAtTime(0, t);
+        og.gain.linearRampToValueAtTime(v * 0.30, t + 0.14);
+        og.gain.exponentialRampToValueAtTime(0.0008, t + 1.3);
+        o.connect(olp); olp.connect(og); og.connect(this.bus); o.start(t); o.stop(t + 1.35);
+      },
+      /* 登陆打击乐：各等级统一使用低音定音鼓＋极轻钹擦声，响度按登陆风速缩放。
+         0.9 秒内不重复触发，避免多个登陆点挤在一起叠成一团。 */
+      strikeLandfall:function(cat, kt){
+        if (!this.ctx) this.init();
+        if (!this.ctx || !this.layers.music) return;
+        if (this.ctx.state === "suspended") this.ctx.resume();
+        var ctx = this.ctx, t = ctx.currentTime;
+        if (t - this._lastStrike < 0.9) return;
+        this._lastStrike = t;
+        var s = Math.max(0.3, Math.min(1, kt / 160));
+        t += 0.02;
+          /* Low timpani: a tuned membrane fundamental and decaying resonant modes. */
+          var root = this.curChord().root;
+          this.thump(t, root, 0.018 + s * 0.035, 0.8);
+          var pgRoute = this.bus;
+          [1, 1.5, 2.02, 2.49].forEach(function(ratio, i){
+            var mode = ctx.createOscillator(), mg = ctx.createGain();
+            var freq = root * 2 * ratio, tail = 1.25 - i * 0.2;
+            mode.type = "sine";
+            mode.frequency.setValueAtTime(freq * 1.025, t);
+            mode.frequency.exponentialRampToValueAtTime(freq, t + 0.08);
+            mg.gain.setValueAtTime(0, t);
+            mg.gain.linearRampToValueAtTime((0.035 + s * 0.085) / Math.pow(2.8, i), t + 0.014);
+            mg.gain.exponentialRampToValueAtTime(0.00001, t + tail);
+            mode.connect(mg); mg.connect(pgRoute); mode.start(t); mode.stop(t + tail + 0.03);
+            mode.onended = function(){ mode.disconnect(); mg.disconnect(); };
+          });
+          var brush = ctx.createBufferSource(); brush.buffer = this.noiseBuffer();
+          var high = ctx.createBiquadFilter(); high.type = "highpass"; high.frequency.value = 1800;
+          var low = ctx.createBiquadFilter(); low.type = "lowpass"; low.frequency.value = 5200;
+          var bg = ctx.createGain(); bg.gain.setValueAtTime(0, t);
+          bg.gain.linearRampToValueAtTime(0.002 + s * 0.006, t + 0.025);
+          bg.gain.exponentialRampToValueAtTime(0.00001, t + 0.38);
+          brush.connect(high); high.connect(low); low.connect(bg); bg.connect(this.bus);
+          brush.start(t); brush.stop(t + 0.42);
+          brush.onended = function(){ brush.disconnect(); high.disconnect(); low.disconnect(); bg.disconnect(); };
+      }
+    };
+    function scheduleMapRedraw(){
+      setTimeout(function(){ try{ drawMakerMap(); }catch(e){} try{ drawDemoTrack(); }catch(e){} }, 350);
+    }
+    function renderMine(){
+      var box = document.getElementById("tcMine");
+      box.innerHTML = "";
+      if (!myStorms.length){
+        box.innerHTML = '<p class="empty">Not yet. Pick an icon, a name and a month above, click "Generate randomly" and it will appear here — click it to replay it.</p>';
+        return;
+      }
+      myStorms.forEach(function(s){
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "card";
+        b.innerHTML = '<img src="' + iconFile(s.cat) + '" alt="" /><span><span class="nm" style="font-size:16px;font-weight:900">' + esc(s.cn) +
+          '</span><br><span class="en num">' + MONTH_ABBR[s.month-1] + ' · ' + fmtLat(s.lat) + ', ' + fmtLon(s.lon) + ' · peak ' + s.kt + ' kt</span></span>';
+        b.addEventListener("click", function(){ playTcStorm(s); });
+        box.appendChild(b);
+      });
+    }
+
+
+  /* ---------------- data ---------------- */
+  var STAGE_NAMES = ["Birth","Growth","Strongest","Weakening","Dissipation"];
+  var BASE_STAGES = [
+    { wind:15, pres:1002, text:"The typhoon was born over the sea about 500 km south of Chichijima, facing a light breeze, drifting slowly northwest.", eye:"Eye: not yet formed", strike:"Ding — triangle (very faint)" },
+    { wind:25, pres:986,  text:"The typhoon is growing: its cloud mass spins ever more neatly, winds rising to 25 m/s as it heads west-northwest.", eye:"Eye: forming", strike:"Ding — triangle (a little clearer)" },
+    { wind:50, pres:932,  text:"The typhoon is at its strongest! Centre winds 50 m/s, a huge eye clearly visible — at this moment of landfall, gongs and drums sound together.", eye:"Eye: huge and clear", strike:"Clang — gong + drum (strongest!)" },
+    { wind:32, pres:968,  text:"The typhoon is weakening: the wind is dropping, the cloud mass loosening, rain still falling, but the worst is past.", eye:"Eye: filling in", strike:"Dong — gong (a little weaker)" },
+    { wind:14, pres:1004, text:"The typhoon has faded away, back to ordinary wind and rain. A typhoon symphony, played to the end.", eye:"Eye: gone", strike:"Ding — triangle (a gentle close)" }
+  ];
+
+  var MONTHS = [
+    { m:1, storms:[{"name": "Nokaen", "en": "Nokaen", "no": "2601", "dates": "Jan 13 – Jan 22", "days": 10, "peakKmh": 75, "peakP": 996, "kt": 45, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in January – the earliest season opener since 2019, bringing torrential rain and flash floods to the Philippines."}] },
+    { m:2, storms:[{"name": "Penha", "en": "Penha", "no": "2602", "dates": "Feb 3 – Feb 7", "days": 5, "peakKmh": 65, "peakP": 1002, "kt": 40, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in February – made five separate landfalls across the Philippine islands before dissipating over cool water."}] },
+    { m:3, storms:[{"name": "Nuri", "en": "Nuri", "no": "2603", "dates": "Mar 10 – Mar 12", "days": 3, "peakKmh": 65, "peakP": 998, "kt": 35, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in March – lived only 3 days, one of the shortest-lived named storms of the year."}] },
+    { m:4, storms:[{"name": "Sinlaku", "en": "Sinlaku", "no": "2604", "dates": "Apr 7 – Apr 19", "days": 13, "peakKmh": 215, "peakP": 905, "kt": 160, "cat": "5", "tag": "Super Typhoon", "tip": "Formed in April – the year’s first super typhoon, peaking at 160 kt; made landfall on Tinian and swept across Saipan after an eyewall replacement."}] },
+    { m:5, storms:[{"name": "Hagupit", "en": "Hagupit", "no": "2605", "dates": "May 4 – May 19", "days": 16, "peakKmh": 65, "peakP": 1002, "kt": 40, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in May – never got very strong, but lived 16 days, the longest-lived tropical storm of the year."}, {"name": "Jangmi", "en": "Jangmi", "no": "2606", "dates": "May 26 – Jun 3", "days": 9, "peakKmh": 110, "peakP": 970, "kt": 75, "cat": "1", "tag": "Category 1 Typhoon", "tip": "Formed in late May – topped out at severe tropical storm strength, which JTWC rated as a Category 1 typhoon."}] },
+    { m:6, storms:[{"name": "Mekkhala", "en": "Mekkhala", "no": "2607", "dates": "Jun 18 – Jun 27", "days": 10, "peakKmh": 185, "peakP": 925, "kt": 126, "cat": "4", "tag": "Category 4 Typhoon", "tip": "Formed in June – rapidly intensified to Category 4 east of the Philippines, then brushed past Taiwan and Japan."}, {"name": "Higos", "en": "Higos", "no": "2608", "dates": "Jun 21 – Jun 26", "days": 6, "peakKmh": 95, "peakP": 996, "kt": 55, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in June – a small storm that spent its life over open water around the same time as Mekkhala."}, {"name": "Bavi", "en": "Bavi", "no": "2609", "dates": "Jun 30 – Jul 15", "days": 16, "peakKmh": 215, "peakP": 900, "kt": 155, "cat": "5", "tag": "Super Typhoon", "tip": "Formed in late June, peaked in July – made a 155 kt landfall on Rota, then made a second landfall on Zhejiang at typhoon strength; tied for the lowest pressure of the year."}, {"name": "Maysak", "en": "Maysak", "no": "2610", "dates": "Jun 30 – Jul 7", "days": 8, "peakKmh": 95, "peakP": 985, "kt": 55, "cat": "s", "tag": "Tropical Storm", "tip": "Formed the same day as Bavi – crossed Hainan into southern China; its flooding was the deadliest of the year."}] },
+    { m:7, storms:[{"name": "Haishen", "en": "Haishen", "no": "2611", "dates": "Jul 12 – Jul 13", "days": 2, "peakKmh": 65, "peakP": 1004, "kt": 40, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in July – lasted only 2 days before dissipating, the shortest-lived storm of the year."}, {"name": "Noul", "en": "Noul", "no": "2612", "dates": "Jul 22 – Jul 27", "days": 6, "peakKmh": 130, "peakP": 965, "kt": 87, "cat": "2", "tag": "Category 2 Typhoon", "tip": "Formed in July – brushed the northern tip of Luzon, then made landfall before dawn on Jul 26 at severe typhoon strength near Pinghai, Huidong County, Huizhou, Guangdong – the year’s first typhoon landfall in Guangdong; peaked at Category 2, 965 hPa."}, {"name": "Dolphin", "en": "Dolphin", "no": "2613", "dates": "Jul 26 – Aug 12", "days": 18, "peakKmh": 205, "peakP": 915, "kt": 150, "cat": "5", "tag": "Super Typhoon", "tip": "Formed in July – a long-lived super typhoon that lasted 18 days and went through four eyewall replacement cycles before finally making landfall on Zhejiang."}, {"name": "Kujira", "en": "Kujira", "no": "2614", "dates": "Jul 31 – Aug 6", "days": 7, "peakKmh": 75, "peakP": 994, "kt": 45, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in late July – an unremarkable, by-the-book tropical storm."}] },
+    { m:8, storms:[{"name": "Chan-hom", "en": "Chan-hom", "no": "2615", "dates": "Aug 5 – Aug 15", "days": 11, "peakKmh": 95, "peakP": 980, "kt": 55, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – a severe tropical storm that dropped to 980 hPa without ever crossing into typhoon strength."}, {"name": "Peilou", "en": "Peilou", "no": "2616", "dates": "Aug 8 – Aug 13", "days": 6, "peakKmh": 85, "peakP": 992, "kt": 50, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – named by Macao; the name refers to the black-faced spoonbill."}, {"name": "Nangka", "en": "Nangka", "no": "2617", "dates": "Aug 11 – Aug 16", "days": 6, "peakKmh": 75, "peakP": 990, "kt": 45, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – named by Malaysia, after the jackfruit."}, {"name": "Saudel", "en": "Saudel", "no": "2618", "dates": "Aug 15 – Sep 4", "days": 21, "peakKmh": 165, "peakP": 940, "kt": 113, "cat": "4", "tag": "Category 4 Typhoon", "tip": "Formed in August – the longest-lived storm of the year (21 days), making landfall three times on Zhejiang and Fujian and tracing a looping “6”-shaped path."}, {"name": "Narra", "en": "Narra", "no": "2619", "dates": "Aug 17 – Aug 27", "days": 11, "peakKmh": 75, "peakP": 990, "kt": 45, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – named after the Philippines’ national tree, the narra."}, {"name": "Gaenari", "en": "Gaenari", "no": "2620", "dates": "Aug 18 – Aug 25", "days": 8, "peakKmh": 65, "peakP": 996, "kt": 40, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – named by South Korea, after a type of forsythia related to jasmine."}, {"name": "Atsani", "en": "Atsani", "no": "2621", "dates": "Aug 22 – Aug 26", "days": 5, "peakKmh": 65, "peakP": 998, "kt": 35, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – named by Thailand; the name simply means “lightning.”"}, {"name": "Bang-Lang", "en": "Bang-Lang", "no": "2622", "dates": "Aug 25 – Aug 30", "days": 6, "peakKmh": 120, "peakP": 980, "kt": 75, "cat": "1", "tag": "Category 1 Typhoon", "tip": "Formed in August – just barely crossed into typhoon strength, Category 1."}, {"name": "Etau", "en": "Etau", "no": "2623", "dates": "Aug 26 – Aug 30", "days": 5, "peakKmh": 75, "peakP": 994, "kt": 45, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in August – formed right behind Bang-Lang and dissipated five days later."}, {"name": "Krovanh", "en": "Krovanh", "no": "2624", "dates": "Aug 29 – Sep 8", "days": 11, "peakKmh": 85, "peakP": 985, "kt": 50, "cat": "s", "tag": "Tropical Storm", "tip": "Formed in late August – a tropical storm that carried through into September before dissipating."}] },
+    { m:9, storms:[{"name": "Dujuan", "en": "Dujuan", "no": "2625", "dates": "Sep 13 – Sep 22", "days": 10, "peakKmh": 140, "peakP": 960, "kt": 70, "cat": "1", "tag": "Category 1 Typhoon", "tip": "Formed in September – opens the autumn typhoon run, peaking at Category 1, 960 hPa."}, {"name": "Surigae", "en": "Surigae", "no": "2626", "dates": "Sep 21 – Oct 1", "days": 11, "peakKmh": 175, "peakP": 945, "kt": 130, "cat": "4", "tag": "Super Typhoon", "tip": "Formed in September – a Category 4 super typhoon proving autumn storms can hit just as hard as summer ones."}, {"name": "Choi-wan", "en": "Choi-wan", "no": "2627", "dates": "Sep 27 – Oct 7", "days": 11, "peakKmh": 175, "peakP": 925, "kt": 135, "cat": "4", "tag": "Super Typhoon", "tip": "Formed in late September – bottomed out at 925 hPa, one of the deepest pressures of the year."}] },
+    { m:10, storms:[{"name": "Nolo", "en": "Nolo", "no": "2628", "dates": "Oct 4 – Oct 11", "days": 8, "peakKmh": 175, "peakP": 950, "kt": 110, "cat": "3", "tag": "Category 3 Typhoon", "tip": "Formed in October – crossed into this basin from the central Pacific over the International Date Line, the first to do so since Dora in 2023."}, {"name": "Koguma", "en": "Koguma", "no": "2629", "dates": "Oct 3 – Oct 13", "days": 11, "peakKmh": 165, "peakP": 950, "kt": 115, "cat": "4", "tag": "Category 4 Typhoon", "tip": "Formed in October – named by Japan, after the constellation Ursa Minor; peaked at Category 4."}, {"name": "Champi", "en": "Champi", "no": "2630", "dates": "Oct 11 – Oct 25", "days": 15, "peakKmh": 215, "peakP": 900, "kt": 160, "cat": "5", "tag": "Super Typhoon", "tip": "Formed in October – tied with Sinlaku as the year’s strongest (185 mph), 900 hPa, affecting the Marianas and Taiwan."}, {"name": "In-fa", "en": "In-fa", "no": "2631", "dates": "Oct 22 – Nov 5", "days": 15, "peakKmh": 185, "peakP": 940, "kt": 130, "cat": "4", "tag": "Super Typhoon", "tip": "Formed in October – the year’s seventh super typhoon, peaking Oct 29 with an unusually large eye."}] },
+    { m:11, storms:[{"name": "Cempaka", "en": "Cempaka", "no": "2632", "dates": "Nov 5 – Nov 11", "days": 7, "peakKmh": 155, "peakP": 955, "kt": 85, "cat": "2", "tag": "Category 2 Typhoon", "tip": "Formed as a tropical depression over open water north of Guam on Nov 5, and was named on Nov 7 (the first storm No. 32 in 32 years); strengthened into a typhoon on Nov 8, briefly dropped to 65 kt at 06:00 UTC on Nov 9 before climbing back to 75 kt by 21:00 UTC, then peaked at 155 km/h (roughly 85 kt) and 955 hPa on Nov 10, rated by the JMA as a “Very Strong Typhoon”; it then weakened, dropping to severe tropical storm strength (60 kt, 985 hPa) at 29.2°N, 151.0°E at 09:00 UTC on Nov 11, and turned extratropical at 12:00 UTC that same day, ending its life as a cyclone. It spent its entire life over the waters near the Mariana Islands and the Ogasawara Islands and never made landfall."}] }
+  ];
+
+  /* five real-data stages for a picked storm: profile scaled to its true peak */
+  function stagesFor(s){
+    var peakMs = Math.max(12, Math.round(s.peakKmh / 3.6));
+    var prof = [0.45, 0.7, 1.0, 0.7, 0.32];
+    var profP = [0.12, 0.55, 1.0, 0.58, 0.08];
+    var strong = (s.cat === "4" || s.cat === "5");
+    var mid = (s.cat === "2" || s.cat === "3");
+    var eyes = ["Eye: not yet formed", "Eye: forming",
+      strong ? "Eye: huge and clear" : (mid ? "Eye: clearly visible" : "Eye: it never really opened at its strongest"),
+      "Eye: filling in", "Eye: gone"];
+    var strikes = ["Ding — triangle (very faint)", "Ding — triangle (a little clearer)",
+      strong ? "Clang — gong + drum (strongest!)" : (mid ? "Dong — gong (its strongest hit)" : "Ding — triangle (its strongest hit)"),
+      "Dong — gong (a little weaker)", "Ding — triangle (a gentle close)"];
+    var texts = [
+      "'" + s.name + "'is here: " + s.dates + ", born over the Northwest Pacific, living " + s.days + " days.",
+      "'" + s.name + "'is growing: its cloud mass spins ever more neatly, winds climbing, pressure dropping.",
+      "'" + s.name + "'is at its strongest! Peak winds " + s.peakKmh + " km/h (about " + peakMs + " m/s), centre pressure down to " + s.peakP + " hPa.",
+      "Past its peak, '" + s.name + "'is weakening: the wind is dropping, the cloud mass loosening, rain still falling, but the worst is past.",
+      "'" + s.name + "'has faded away, back to ordinary wind and rain. A typhoon symphony, played to the end."
+    ];
+    var hasReal = !!(s.kt && s.peakKmh && typeof s.peakP === "number");
+    var anchors = hasReal ? buildAnchors(s) : null;
+    return prof.map(function(f, i){
+      if (anchors){
+        var kt;
+        if (i === 2){
+          kt = 0;
+          for (var j = 0; j <= 20; j++){ kt = Math.max(kt, windAt(anchors, 0.4 + 0.2 * (j / 20))); }
+        } else {
+          kt = windAt(anchors, (i + 0.5) / 5);
+        }
+        return {
+          wind: Math.max(8, Math.min(60, Math.round(kt / s.kt * s.peakKmh / 3.6))),
+          pres: Math.round(1012 - (1012 - s.peakP) * Math.min(1, kt / s.kt)),
+          text: texts[i], eye: eyes[i], strike: strikes[i]
+        };
+      }
+      return {
+        wind: Math.max(10, Math.min(58, Math.round(peakMs * f))),
+        pres: Math.round(1010 - (1010 - s.peakP) * profP[i]),
+        text: texts[i], eye: eyes[i], strike: strikes[i]
+      };
+    });
+  }
+
+  /* ---- ported from the 2026 Typhoon Collection: real anchor paths and landfall points ---- */
+  var LANDFALLS = {
+        "2602":[{t:0.50, place:"Islands across the Philippines", short:"Philippine coast", label:"Made five separate landfalls across the Philippine islands"}],
+        "2604":[{t:0.62, place:"Tinian · near Saipan", short:"Tinian", label:"Made landfall on Tinian and swept across Saipan after an eyewall replacement"}],
+        "2609":[{t:0.40, place:"Rota Island (Northern Mariana Islands)", short:"Rota Island", label:"First landfall · came ashore at peak strength"},
+                {t:0.80, place:"Zhejiang coast", short:"Zhejiang coast", label:"Second landfall · made landfall on Zhejiang at typhoon strength"}],
+        "2610":[{t:0.75, place:"East coast of Hainan Island", short:"Hainan coast", label:"Made landfall and crossed Hainan into southern China"}],
+        "2612":[{t:0.80, place:"Pinghai, Huidong County, Huizhou, Guangdong", short:"Pinghai, Huidong", label:"Made landfall at 03:50 on Jul 26 · severe typhoon strength, 45 m/s · 955 hPa · the year’s first typhoon landfall in Guangdong"}],
+        "2613":[{t:0.84, place:"Zhejiang coast", short:"Zhejiang coast", label:"Made landfall on Zhejiang"}],
+        "2618":[{t:0.55, place:"Zhejiang coast", short:"Zhejiang coast", label:"First of three landfalls on Zhejiang and Fujian"},
+                {t:0.70, place:"Fujian coast", short:"Fujian coast", label:"Second of three landfalls on Zhejiang and Fujian"},
+                {t:0.82, place:"Zhejiang/Fujian coast", short:"Zhejiang/Fujian coast", label:"Third of three landfalls on Zhejiang and Fujian"}]
+      };
+  function trackPoints(storm){
+        if (storm._track) return storm._track;
+        var pts;
+        if (storm.no === "2609"){
+          /* Bavi: anchors spaced at even time intervals -- Rota (145.3°E, 14.2°N) lands
+             exactly at t=0.40 (its peak-strength landfall), and the Zhejiang coast
+             (121.8°E, 28.2°N) lands exactly at t=0.80 (its second landfall), matching the t values in LANDFALLS */
+          pts = [[168,7.5],[162,9],[156,10.5],[151,12.5],[145.3,14.2],[139,18.5],[132,22.5],[126,25.8],[121.8,28.2],[119.5,30.5],[117.5,33]];
+        } else if (storm.no === "2602"){
+          /* Penha: cuts straight across the Philippine archipelago; all five landfalls happen along this line, with t=0.50 landing in the middle of the islands */
+          pts = [[128,11],[124.5,12.5],[122,13.5],[120.5,14.5],[119.5,16]];
+        } else if (storm.no === "2604"){
+          /* Sinlaku: spawns at 152°E, 10°N and heads due west for the Marianas; Tinian/Saipan (about 145.4°E, 15°N) lands at t≈0.62 */
+          pts = [[152,10],[149,11.5],[147,13],[145.6,14.8],[144,16.5],[141,18.5]];
+        } else if (storm.no === "2610"){
+          /* Maysak: draft gen in the South China Sea at 114°E,14°N, heading WNW; the Hainan east coast (110.3°E,19.9°N) lands at t=0.75, then it moves into South China */
+          pts = [[114,14],[112.5,16],[111.5,18],[110.3,19.9],[108,21.5]];
+        } else if (storm.no === "2612"){
+          /* Hongxia: first brushes the northern tip of Luzon, then lands at Pinghai Town, Huidong County, Huizhou, Guangdong (114.7°E,22.8°N), at t=0.80, then weakens inland */
+          pts = [[128,14],[123,16.5],[121.5,18.5],[118,20.3],[114.7,22.8],[112.8,24.8]];
+        } else if (storm.no === "2613"){
+          /* Dolphin: genesis around 178°E, entering from the right edge of the track map and travelling far west across the open ocean, then north and bending west,
+             the Zhejiang coast (121.3°E,28°N) lands at t≈0.83, aligned with LANDFALLS t=0.84 */
+          pts = [[178,14],[166,15],[152,17],[138,20],[128,23.5],[121.3,28],[119,30.5]];
+        } else if (storm.no === "2618"){
+          /* Saudel: draft gen at 152°E,14°N, heading WNW to the Zhejiang–Fujian coast, then a "6"-shaped path; its three landfall points (t=0.55/0.70/0.82) all sit on the coastline */
+          pts = [[152,14],[144,16],[136,19],[128,22],[121.8,25],[120.3,27.8],[119.5,26.2],[118.3,28.8]];
+        } else if (storm.no === "2630"){
+          /* Qiangpi: after brushing the southern tip of Guam it heads WNW, reaching its peak over the Philippine Sea on Oct 20; its closest point is the 5th anchor
+             (123°E, 25.5°N, in the sea northeast of Taiwan, about 100–200 km off Taiwan's north coast, with Keelung and Yilan both inside the storm circle at the time),
+             right at t=0.50 (the peak moment); then it turns northeast, heading north along the Ryukyu island chain (Sakishima–Okinawa–Kyushu direction) */
+          pts = [[152,12],[148,13],[141,15],[131,20],[123,25.5],[126.2,27.2],[128.8,30],[131.5,33.5],[135,37.5]];
+        } else if (storm.no === "2607"){
+          /* Mekkhala: after exploding to Category 4 east of the Philippines it heads north, brushing close along Taiwan's east coast (closest point 123.2°E,24°N,
+             about a hundred km east of Taiwan's east coast), then toward the Ryukyu/Kyushu direction */
+          pts = [[140,13],[136,16],[131,19],[126.5,21.5],[123.2,24],[124.5,27.5],[129,31],[133,34.5]];
+        } else if (storm.no === "2628"){
+          /* Noul: its real origin is in the Central Pacific east of the dateline (about 155°W, 27°N, from the
+             tf.istrongcloud.com live chart of Oct 5, 20:46, supplied by the user), travelling west across the dateline.
+             It enters from the right edge of the stage track map at 180°E, about 27°N, travelling west a long way along 27–29°N to
+             about 152°E, 29°N (already reached by the evening of Oct 5, then a strong typhoon, Category 15), then turning northeast and
+             gradually weakening to dissipate in the open ocean around 160°E, 35°N (ending Oct 11):
+             its longitude never drops below 152°E, no landfall (the end longitude is >122.5°E and LANDFALLS has no entry for this number,
+             so no generic landfall is triggered). The map's horizontal span 180→152°E is 28°, far longer than the old version's
+             180→165.5°E, 18–20°N short hop; the t=0.50 peak anchor sits at about 154°E, 29°N at the end of the westward leg */
+          pts = [[180,27.5],[174,27.8],[168,28.2],[162,28.6],[156,28.9],[152,29],[154,30.5],[156.5,32],[158.5,33.5],[160.5,35]];
+        } else if (storm.no === "2611"){
+          /* Haishen: draft gen at 160°E,12°N (Marshall Islands direction), drift NE, lasting only 2 days before dissipating northeast */
+          pts = [[160,12],[163,13.5],[166,15]];
+        } else if (storm.no === "2621"){
+          /* Aishani: draft gen at 155°E,12°N (Micronesia), drift NW, staying in the open ocean throughout */
+          pts = [[155,12],[151,14],[147,16],[144,18.5]];
+        } else if (storm.no === "2622"){
+          /* Bailu: draft gen at 166°E,17°N, drift NE, toward Wake Island/the Aleutians (ending in the open ocean, no generic landfall) */
+          pts = [[166,17],[169,20],[172,24],[175,28]];
+        } else if (storm.no === "2623"){
+          /* Aitao: draft gen at 168°E,18°N, drift NE, toward Wake Island/the Aleutians */
+          pts = [[168,18],[171,21],[174,25],[177,29]];
+        } else if (storm.no === "2629"){
+          /* Xiong: draft gen at 168°E,12°N (Marshall Islands direction), drift NW, open ocean throughout (ending at 145°E, no generic landfall) */
+          pts = [[168,12],[162,15],[156,19],[150,24],[145,29]];
+        } else if (storm.no === "2631"){
+          /* Yanhua: draft gen at 158°E,13°N (Marianas), drift W, travelling west to stop at 127°E offshore (ending >122.5°E, no generic landfall) */
+          pts = [[158,13],[152,14],[146,15],[140,16],[133,18],[127,20]];
+        } else if (storm.no === "2632"){
+          /* Cempaka's full life: formed as a tropical depression over the sea north of Guam on Nov 5, first moving west and named on Nov 7
+             at about 143.5°E,19.2°N; mid-life (t=0.50, Nov 8) at about 136°E,22.5°N,
+             then turning east-northeast and accelerating away, passing the Nov 10 21:00 UTC live position (145.9°E,27.3°N,
+             about 370 km east of Chichijima), ending at the Nov 11 09:00 UTC strong tropical storm position
+             (151.0°E,29.2°N, 60 kt, 985 hPa), and becoming extratropical at 12:00 UTC the same day;
+             the middle points are indicative interpolations following the observed path; no landfall throughout */
+          pts = [[146,16.5],[144.5,17.8],[143.5,19.2],[141.5,20.3],[139.3,21.3],[137.6,22.0],[136.2,22.5],[137.5,23.8],[139.5,25.0],[142,26.3],[145.9,27.3],[148.5,28.3],[151,29.2]];
+        } else if (storm.no === "2601"){
+          /* Lu'an: draft gen at 128°E,9°N (east of the Philippines), drift WNW, approaching the east coast of the Philippines */
+          pts = [[128,9],[124,11],[121,13],[119,15]];
+        } else if (storm.no === "2603"){
+          /* Yingwu: draft gen at 143°E,12°N (Marianas), drift NE, north along the Mariana chain */
+          pts = [[143,12],[146,14.5],[149,17],[152,20]];
+        } else if (storm.no === "2605"){
+          /* Hagibis: draft gen at 150°E,8°N (Caroline Islands), drift NW, a long-lived weak storm drifting slowly northwest */
+          pts = [[150,8],[145,11],[141,14],[138,17]];
+        } else if (storm.no === "2606"){
+          /* Qiangwei: draft gen at 134°E,12°N, drift NE, first north then turning northeast toward the sea south of Japan (ending at 141°E, no generic landfall) */
+          pts = [[134,12],[133,16],[135,20],[138,24],[141,28]];
+        } else if (storm.no === "2608"){
+          /* Haigaosi: draft gen at 140°E,16°N, drift NE, heading north toward the Izu Peninsula */
+          pts = [[140,16],[141,20],[140.5,24],[141,28],[141.5,32]];
+        } else if (storm.no === "2614"){
+          /* Jingyu: draft gen at 124°E,15°N, drift WNW, toward Luzon */
+          pts = [[124,15],[121.5,16.5],[120,18],[119,19.5]];
+        } else if (storm.no === "2615"){
+          /* Canhong: draft gen at 150°E,20°N, drift NE, toward the sea off Honshu/Korea */
+          pts = [[150,20],[153,24],[154,28],[152,32],[149,35]];
+        } else if (storm.no === "2616"){
+          /* Bili: draft gen at 152°E,20°N, drift NE, north from the Marianas toward the sea east of Japan */
+          pts = [[152,20],[154,24],[155,28],[156,32]];
+        } else if (storm.no === "2617"){
+          /* Langka: draft gen at 148°E,18°N, drift NE, north from the Marianas toward the sea east of Japan */
+          pts = [[148,18],[150,22],[152,26],[154,30]];
+        } else if (storm.no === "2619"){
+          /* Zitan: draft gen at 122°E,18°N, drift W, west along the Taiwan–Hainan line toward Vietnam */
+          pts = [[122,18],[118,18.5],[114,19],[110.5,19.5],[108,20]];
+        } else if (storm.no === "2620"){
+          /* Jianlavi: draft gen at 128°E,16°N, drift NW, close along Taiwan's east coast north toward the Ryukyus (closest point about 122°E,24.5°N) */
+          pts = [[128,16],[125,19],[122.5,22],[121.8,24.5],[122.5,27]];
+        } else if (storm.no === "2624"){
+          /* Krowang: draft gen at 138°E,20°N, drift NE, north along the Ryukyus toward Kyushu */
+          pts = [[138,20],[136,24],[134,28],[132.5,31.5],[131,34]];
+        } else if (storm.no === "2625"){
+          /* Dujuan: draft gen at 146°E,16°N, drift NE, toward the sea east of Kanto (ending at 146°E, no generic landfall) */
+          pts = [[146,16],[148,20],[149,24],[148,28],[146,32]];
+        } else if (storm.no === "2626"){
+          /* Shuliji: draft gen at 142°E,13°N, drift NE, north past the west side of the Marianas toward Izu (ending at 140°E, no generic landfall) */
+          pts = [[142,13],[144,17],[145,21],[144,25],[142,29],[140,33]];
+        } else if (storm.no === "2627"){
+          /* Caiyun: checked against the same live chart supplied by the user — gen about 150°E, 16°N, first heading north, then turning northeast,
+             rushing to the high-latitude open ocean east of 160°E (ending at 165°E, 41°N; the end longitude is >122.5°E, no generic landfall);
+             the old version's ending shrank all the way back to 150°E and only 32°N, clearly the wrong direction, now corrected */
+          pts = [[150,16],[150.5,20],[151,24],[152,27],[154,30],[157,33],[161,37],[165,41]];
+        } else if (storm.custom && typeof storm.lon === "number"){
+          var lo = storm.lon, la = storm.lat;
+          if (la < 2) pts = [[lo,la],[lo-4,la+5],[lo-8,la+10],[lo-10,la+15]];
+          else pts = [[lo,la],[lo-5,la+3.5],[lo-10,la+6.5],[lo-13,la+10]];
+        } else {
+          /* Fallback (all 32 fixed typhoons are hardcoded above from the drafts, so this never runs):
+             just one indicative open-ocean segment, ending east of 140°E, never drawing landfall out of thin air or triggering a generic landfall */
+          pts = [[150,12],[147,15],[145,18]];
+        }
+        storm._track = pts;
+        return pts;
+      }
+  function trackPos(pts, t){
+        var n = pts.length - 1, f = Math.max(0, Math.min(1, t)) * n;
+        var i = Math.min(n - 1, Math.floor(f)), fr = f - i;
+        return [ pts[i][0] + (pts[i+1][0] - pts[i][0]) * fr, pts[i][1] + (pts[i+1][1] - pts[i][1]) * fr ];
+      }
+  function regionName(lat, lon){
+        if (lat < 0){
+          if (lon >= 145) return "south Pacific waters east of Australia (south of the Coral Sea)";
+          if (lon >= 128) return "waters south of Papua (toward the Arafura Sea)";
+          return "waters south of the Indonesian archipelago";
+        }
+        if (lat >= 36 && lon >= 128 && lon < 142) return "the Sea of Japan and waters northeast of Japan";
+        if (lat >= 30 && lon >= 142) return "waters east of Japan";
+        if (lat >= 31 && lon >= 118 && lon < 128) return "the northern East China Sea / Yellow Sea area";
+        if (lat >= 24 && lon >= 130 && lon < 142) return "waters south of Japan (southeast of Okinawa)";
+        if (lat >= 21 && lon >= 120 && lon < 130) return "waters east of Taiwan";
+        if (lat >= 5 && lat < 22 && lon >= 108 && lon < 121) return "the South China Sea";
+        if (lat >= 8 && lat < 21 && lon >= 121 && lon < 136) return "waters east of the Philippines";
+        if (lat >= 10 && lat < 23 && lon >= 136 && lon < 149) return "waters near the Mariana Islands (toward Guam)";
+        if (lat >= 23 && lon >= 149) return "the open Northwest Pacific";
+        if (lat < 10 && lon >= 130) return "the western Pacific warm pool near the equator";
+        return "the western Pacific";
+      }
+  function getLandfalls(storm){
+        if (!storm) return [];
+        if (LANDFALLS[storm.no]) return LANDFALLS[storm.no];
+        var pts = trackPoints(storm), end = pts[pts.length - 1];
+        if (storm.custom){
+          var mid = trackPos(pts, 0.82);
+          return [{ t:0.82, place:regionName(mid[1], mid[0]), short:"Landfall point", label:"Landfall" }];
+        }
+        /* Generic landfall is only given when the track genuinely reaches the China coast (≤122.5°E) at the end;
+           a track that still ends in the ocean (e.g. Yanhua stopping at 125°E offshore) is not forced a landfall, so the landfall ring doesn't end up in the sea */
+        if (storm.kt >= 64 && end[0] <= 122.5){
+          var p8 = trackPos(pts, 0.80);
+          return [{ t:0.80, place:regionName(p8[1], p8[0]), short:"Landfall point", label:"Landfall" }];
+        }
+        return [];
+      }
+
+  /* ---- real satellite track map ----
+     Ported from the original 2026 Typhoon Collection's drawTrackMap(pl): the basemap uses this file's existing
+     paintBasemap(ctx,W,H,TRACK_VIEW) + proj()/sizeCanvas() (sharing the same
+     projection and tile cache as the maker map); the off-screen trackBase is cached once under the same key as the original (size/theme/DPR/tile version)
+     and drawn with drawImage each frame. The red track line, orange landfall rings and current-position label are copied from the original word for word —
+     no demo-invented cyan track or numbered 1–5 dots. */
+  var TRACK_VIEW = { lonMin:100, lonMax:180, latMin:-6, latMax:50 };
+  var trackBase = null, trackKey = "";
+  var trackRetry = false;
+  function drawDemoTrack(){
+    var cv = $("trackCanvas");
+    if (!cv || !state.current || (!state.current.real && !state.current.tcRec)) return;
+    if (cv.getBoundingClientRect().width < 100){
+      if (!trackRetry){ trackRetry = true; requestAnimationFrame(function(){ trackRetry = false; drawDemoTrack(); }); }
+      return;
+    }
+    var s = sizeCanvas(cv), w = s.w, h = s.h;
+    var key = w + "x" + h + "x" + (isDark() ? "d" : "l") + "x" + (window.devicePixelRatio || 1) + "x" + tileVersion;
+    if (!trackBase || trackKey !== key){
+      trackBase = document.createElement("canvas");
+      trackBase.width = cv.width; trackBase.height = cv.height;
+      var bctx = trackBase.getContext("2d");
+      bctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+      paintBasemap(bctx, w, h, TRACK_VIEW);
+      trackKey = key;
+    }
+    var ctx = s.ctx, p = proj(w, h, TRACK_VIEW);
+    var so = state.current.tcRec ? state.current.tcRec : { no: state.current.real.no, kt: state.current.real.kt };
+    var pts = trackPoints(so), t = TPL.t, i, q;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(trackBase, 0, 0, w, h);
+    ctx.lineWidth = 2; ctx.lineJoin = "round";
+    ctx.strokeStyle = "rgba(238,58,36,.38)"; ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    pts.forEach(function(pt, j){ if (j === 0) ctx.moveTo(p.x(pt[0]), p.y(pt[1])); else ctx.lineTo(p.x(pt[0]), p.y(pt[1])); });
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = "#ee3a24";
+    ctx.beginPath();
+    var seg = 40, upto = Math.max(1, Math.round(seg * t));
+    for (i = 0; i <= upto; i++){
+      q = trackPos(pts, i / seg);
+      if (i === 0) ctx.moveTo(p.x(q[0]), p.y(q[1])); else ctx.lineTo(p.x(q[0]), p.y(q[1]));
+    }
+    ctx.stroke();
+    /* Orange landfall rings gain an outer outline once reached; grade icons stay visible. */
+    var pos = trackPos(pts, t);
+    var currentCategory = drawTrackGrades(ctx, p, pts, TPL.anchors, t, w, h);
+    getLandfalls(so).forEach(function(lf){
+      var lp = trackPos(pts, lf.t), lx = p.x(lp[0]), ly = p.y(lp[1]), done = t >= lf.t;
+      var ringRadius = Math.hypot(lx - p.x(pos[0]), ly - p.y(pos[1])) < 24 ? 25 : 13;
+      ctx.beginPath(); ctx.arc(lx, ly, ringRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = "#ff8c1a"; ctx.lineWidth = 2.5; ctx.stroke();
+      if (done){ ctx.strokeStyle = "#ff8c1a"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(lx, ly, ringRadius + 3, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.fillStyle = "#ff8c1a"; ctx.font = "900 11px 'Noto Sans SC', sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 3;
+      ctx.fillText("Landfall", Math.max(4, Math.min(w - 30, lx + 11)), Math.max(13, ly - 6));
+      ctx.shadowBlur = 0;
+    });
+    ctx.fillStyle = isDark() ? "#e9f3f8" : "#0e2231"; ctx.font = "700 12px 'Noto Sans SC', sans-serif";
+    var trackLabel = state.current.name + " · " + CAT_LABEL[currentCategory] + " · " + fmtLat(pos[1]) + ", " + fmtLon(pos[0]);
+    ctx.fillText(trackLabel, Math.max(4, Math.min(w - ctx.measureText(trackLabel).width - 4, p.x(pos[0]) + 24)),
+      Math.max(14, p.y(pos[1]) - 24), w - 8);
+  }
+
+  /* ---- real NASA MODIS cloud image per stage date ---- */
+  var lastCloudKey = "";
+  /* en: the "dates" field is now formatted "Mon D ..." (e.g. "Jun 30 - Jul 15"),
+     so this parses the three-letter month abbreviation instead of the "X-month-Y-day" shape */
+  function stageDate(r, frac){
+    var m = /^([A-Za-z]{3})\w*\s+(\d+)/.exec(r.dates || "");
+    if (!m) return null;
+    var mi = MONTH_ABBR.indexOf(m[1]);
+    if (mi < 0) return null;
+    var d = new Date(2026, mi, parseInt(m[2], 10) + Math.round(r.days * frac));
+    function pad(n){ return (n < 10 ? "0" : "") + n; }
+    return { ds: d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()),
+             label: MONTH_ABBR[d.getMonth()] + " " + d.getDate() };
+  }
+  function updateRealViews(){
+    var cur = state.current;
+    if (!cur) return;
+    if (!cur.real){ if (cur.tcRec) drawDemoTrack(); return; }
+    drawDemoTrack();
+    var frac = TPL.t, key = cur.real.no + "@" + Math.floor(TPL.t * 20);
+    if (key === lastCloudKey) return;
+    lastCloudKey = key;
+    var sd = stageDate(cur.real, frac);
+    if (!sd) return;
+    var pts = trackPoints({ no: cur.real.no, kt: cur.real.kt });
+    var c = trackPos(pts, frac);
+    var lonMin = Math.round(c[0] - 16), lonMax = Math.round(c[0] + 16);
+    var latMin = Math.max(-5, Math.round(c[1] - 11)), latMax = Math.min(49, Math.round(c[1] + 11));
+    var img = $("cloudImg");
+    var rc = $("realCloud"); if (rc) rc.style.display = "";
+    var sb = $("spiralBox"); if (sb) sb.style.display = "none";
+    var cf = $("cloudFallback"); if (cf) cf.style.display = "none";
+    /* Real satellite imagery is fetched online; if it fails to load, don't leave the browser's broken-image icon — swap in a clean placeholder icon,
+       kept separate from the maker's spiral animation (#spiralBox), don't mix them up */
+    img.onerror = function(){ if (rc) rc.style.display = "none"; if (cf) cf.style.display = "flex"; };
+    img.onload = function(){ if (rc) rc.style.display = ""; if (cf) cf.style.display = "none"; };
+    img.src = "https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&CRS=EPSG:4326&BBOX=" +
+      latMin + "," + lonMin + "," + latMax + "," + lonMax + "&WIDTH=880&HEIGHT=620&FORMAT=image/jpeg&ts=" + sd.ds + "T00:00:00Z";
+    $("cloudCap").textContent = "Real NASA MODIS imagery · " + sd.label + " · " + cur.real.name + ", " + STAGE_NAMES[state.stage] + " stage";
+    $("wvOpen").href = "https://worldview.earthdata.nasa.gov/?v=" + lonMin + "," + latMin + "," + lonMax + "," + latMax + "&t=" + sd.ds + "&l=MODIS_Terra_CorrectedReflectance_TrueColor";
+  }
+  /* ---------------- state ---------------- */
+  var state = {
+    screen:"home",
+    current:null,        // {name, en, custom, stages:[...]}
+    stage:0,
+    playing:false,
+    view:"cloud",
+    stageTimer:null,
+    musicTimer:null,
+    noteStep:0
+  };
+
+  /* ---------------- dom helpers ---------------- */
+  function $(id){ return document.getElementById(id); }
+  /* v6 shell glue: the four old "screen" ids no longer correspond to full
+     pages — show() now also flips a data-mode attribute on <body>, which the
+     CSS uses to swap the middle/right column panels. The legacy
+     classList.add("active") call is kept (harmless) so nothing else that
+     inspects .screen.active breaks. */
+  var SCREEN_MODE = { "screen-home":"howto", "screen-pick":"player", "screen-play":"player", "screen-create":"maker" };
+  function show(id){
+    var screens = document.querySelectorAll(".screen");
+    for (var i=0;i<screens.length;i++) screens[i].classList.remove("active");
+    $(id).classList.add("active");
+    document.body.setAttribute("data-mode", SCREEN_MODE[id] || "player");
+    window.scrollTo(0,0);
+  }
+
+  /* ---------------- month list ---------------- */
+  function buildMonths(){
+    var list = $("monthList");
+    var html = "";
+    MONTHS.forEach(function(mo){
+      html += '<div class="month" data-month="'+mo.m+'">';
+      html += '<button class="month-head" type="button"><span>'+MONTH_FULL[mo.m-1]+'</span><span class="cnt">'+mo.storms.length+(mo.storms.length===1?' storm':' storms')+'</span><span class="chev">▾</span></button>';
+      html += '<div class="month-body">';
+      if (MONTH_HINTS[mo.m]) html += '<p class="month-hint2">' + MONTH_HINTS[mo.m] + '</p>';
+      mo.storms.forEach(function(s){
+        html += '<button class="storm-btn" type="button" data-storm="'+s.en+'">';
+        html += '<img class="swirl" src="' + iconFile(s.cat) + '" alt="' + CAT_LABEL[s.cat] + '" />';
+        html += '<span class="storm-copy"><span class="storm-heading"><span class="nm">'+s.name+'</span>';
+        html += '<span class="tag">'+(s.tag || 'Real entry')+'</span>';
+        html += '</span><span class="meta">'+s.dates+'</span></span>';
+        html += '</button>';
+      });
+      html += '</div></div>';
+    });
+    list.innerHTML = html;
+
+    var heads = list.querySelectorAll(".month-head");
+    heads.forEach(function(h){
+      h.addEventListener("click", function(){
+        var box = h.parentElement;
+        var wasOpen = box.classList.contains("open");
+        var all = list.querySelectorAll(".month");
+        all.forEach(function(x){ x.classList.remove("open"); });
+        if (!wasOpen) box.classList.add("open");
+      });
+    });
+    var btns = list.querySelectorAll(".storm-btn");
+    btns.forEach(function(b){
+      b.addEventListener("click", function(){
+        var en = b.getAttribute("data-storm");
+        var found = null, monthNum = 0;
+        MONTHS.forEach(function(mo){
+          mo.storms.forEach(function(s){ if (s.en === en){ found = s; monthNum = mo.m; } });
+        });
+        if (!found) return;
+        loadTyphoon({
+          name: found.name,
+          en: found.en + " · " + MONTH_FULL[monthNum-1] + " 2026",
+          custom:false,
+          real: found,
+          stages: stagesFor(found)
+        });
+        show("screen-play");
+        list.querySelectorAll(".storm-btn").forEach(function(x){ x.classList.toggle("current", x === b); });
+      });
+    });
+    // open July by default (has a real entry)
+    var july = list.querySelector('[data-month="7"]');
+    if (july) july.classList.add("open");
+  }
+
+  /* ---------------- dots ---------------- */
+  function buildDots(){
+    var box = $("dots");
+    if (!box) return;
+    var html = "";
+    STAGE_NAMES.forEach(function(n, i){
+      html += '<div class="dot-wrap" data-wrap="'+i+'"><button class="dot" type="button" data-dot="'+i+'" aria-label="Jump to stage: '+n+'">'+(i+1)+'</button><span class="dot-lab">'+n+'</span></div>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll(".dot").forEach(function(d){
+      d.addEventListener("click", function(){
+        setStage(parseInt(d.getAttribute("data-dot"),10), true);
+        if (state.playing) restartStageTimer();
+      });
+    });
+  }
+
+  /* ---------------- audio ---------------- */
+  var AC = null, master = null;
+  function ensureAudio(){
+    if (AC) { if (AC.state === "suspended") AC.resume(); return; }
+    var Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return;
+    AC = new Ctor();
+    master = AC.createGain();
+    master.gain.value = 0.4; /* small and steady — never loud */
+    /* gentle limiter-ish compression to keep peaks tame */
+    var comp = AC.createDynamicsCompressor();
+    comp.threshold.value = -18; comp.ratio.value = 8;
+    master.connect(comp); comp.connect(AC.destination);
+  }
+  function bpmFor(wind){
+    var b = 50 + (wind - 10) / 45 * 70;
+    return Math.max(50, Math.min(120, Math.round(b)));
+  }
+  function bassFreqFor(pres){
+    /* lower pressure -> lower bass: 1004hPa ~ 131Hz, 932hPa ~ 65Hz */
+    var t = (pres - 915) / (1010 - 915);
+    return 55 + t * 90;
+  }
+  var PENTA = [0, 2, 4, 7, 9]; /* C major pentatonic — notes never clash */
+  function playNote(step, wind, pres){
+    if (!AC || !state.playing) return;
+    var t = AC.currentTime;
+    /* melody: soft sine/triangle, quiet */
+    var idx = Math.abs(step * 2 + (step % 3)) % (PENTA.length * 2);
+    var oct = idx >= PENTA.length ? 2 : 1;
+    var semitone = PENTA[idx % PENTA.length];
+    var freq = 261.63 * oct * Math.pow(2, semitone / 12);
+    var osc = AC.createOscillator(); osc.type = "sine"; osc.frequency.value = freq;
+    var g = AC.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.11, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    var flt = AC.createBiquadFilter(); flt.type = "lowpass"; flt.frequency.value = 1600;
+    osc.connect(flt); flt.connect(g); g.connect(master);
+    osc.start(t); osc.stop(t + 1);
+    /* every 4 steps: a low "pressure" bass note */
+    if (step % 4 === 0){
+      var b = AC.createOscillator(); b.type = "triangle"; b.frequency.value = bassFreqFor(pres);
+      var bg = AC.createGain();
+      bg.gain.setValueAtTime(0, t);
+      bg.gain.linearRampToValueAtTime(0.13, t + 0.05);
+      bg.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+      b.connect(bg); bg.connect(master);
+      b.start(t); b.stop(t + 1.7);
+    }
+  }
+  function startMusic(){
+    stopMusic();
+    state.noteStep = 0;
+    var tick = function(){
+      if (!state.playing || !state.current) return;
+      var st = state.current.stages[state.stage];
+      playNote(state.noteStep, st.wind, st.pres);
+      state.noteStep++;
+      var interval = 60000 / bpmFor(st.wind) / 2; /* eighth notes */
+      state.musicTimer = setTimeout(tick, interval);
+    };
+    tick();
+  }
+  function stopMusic(){
+    if (state.musicTimer){ clearTimeout(state.musicTimer); state.musicTimer = null; }
+  }
+  /* metal strike: strength follows wind — weak = high triangle ding, strong = gong + drum */
+  function strike(wind){
+    if (!AC) return;
+    var t = AC.currentTime;
+    var s = Math.max(0, Math.min(1, (wind - 12) / 40)); /* 0 weak … 1 strongest */
+    /* triangle-iron ding (always present, brighter when weak) */
+    var dingFreq = 1800 - s * 700;
+    var ding = AC.createOscillator(); ding.type = "sine"; ding.frequency.value = dingFreq;
+    var dg = AC.createGain();
+    dg.gain.setValueAtTime(0.16 + s * 0.05, t);
+    dg.gain.exponentialRampToValueAtTime(0.0001, t + (0.7 + s * 0.8));
+    ding.connect(dg); dg.connect(master); ding.start(t); ding.stop(t + 1.6);
+    if (s > 0.35){
+      /* gong: inharmonic partials, weight grows with strength */
+      var base = 196 - s * 66;
+      [1, 1.48, 2.09, 2.94].forEach(function(mult, i){
+        var o = AC.createOscillator(); o.type = "sine"; o.frequency.value = base * mult;
+        var g = AC.createGain();
+        g.gain.setValueAtTime((0.14 - i * 0.025) * s, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4 + s);
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 2.6);
+      });
+    }
+    if (s > 0.7){
+      /* drum hit for the strongest / landfall moment */
+      var drum = AC.createOscillator(); drum.type = "sine";
+      drum.frequency.setValueAtTime(150, t);
+      drum.frequency.exponentialRampToValueAtTime(48, t + 0.35);
+      var drg = AC.createGain();
+      drg.gain.setValueAtTime(0.30, t);
+      drg.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      drum.connect(drg); drg.connect(master); drum.start(t); drum.stop(t + 0.8);
+    }
+    /* amber flash + note */
+    var fl = $("strikeFlash");
+    fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
+  }
+
+  /* ---------------- playback ---------------- */
+  function setStage(i, withStrike){
+    if (!state.current) return;
+    TPL.seek(Math.max(0, Math.min(4, i)) / 5);
+  }
+  function restartStageTimer(){ /* v5: continuous player, no stage timer */ }
+  function startPlayback(){
+    if (!state.current) return;
+    try{ AudioEngine.init(); }catch(e){}
+    state.playing = true;
+    document.body.classList.add("playing");
+    $("stageBox").classList.add("playing");
+    $("playBtn").textContent = "⏸";
+    TPL.play();
+  }
+  function pausePlayback(){
+    state.playing = false;
+    document.body.classList.remove("playing");
+    $("stageBox").classList.remove("playing");
+    $("playBtn").textContent = "▶";
+    TPL.pause();
+  }
+  function stopAll(){
+    pausePlayback();
+  }
+
+  function loadTyphoon(t){
+    stopAll();
+    state.current = t;
+    state.stage = 0;
+    $("playName").textContent = t.name;
+    $("playEn").textContent = t.en;
+    if (t.custom){
+      var ml = $("monthList");
+      if (ml) ml.querySelectorAll(".storm-btn.current").forEach(function(x){ x.classList.remove("current"); });
+    }
+    /* custom typhoons: no real cloud imagery, cloud view falls back to the simulated spiral */
+    $("cloudFallback").style.display = "none";
+    if (t.custom){
+      $("customNote").classList.add("show");
+      $("realCloud").style.display = "none";
+      $("spiralBox").style.display = "";
+      if (t.tcRec){ $("trackCanvas").style.display = ""; $("trackCap").style.display = ""; $("demoPathSvg").style.display = "none"; }
+      else { $("trackCanvas").style.display = "none"; $("trackCap").style.display = "none"; $("demoPathSvg").style.display = ""; }
+    } else {
+      $("customNote").classList.remove("show");
+      $("realCloud").style.display = "";
+      $("spiralBox").style.display = "none";
+      $("trackCanvas").style.display = "";
+      $("trackCap").style.display = "";
+      $("demoPathSvg").style.display = "none";
+      lastCloudKey = "";
+    }
+    $("playBack").textContent = t.custom ? "‹ Back to My Typhoon" : "‹ Pick a Typhoon";
+    $("narration").textContent = "'" + t.name + "'is ready. Press play and hear its whole life.";
+    var rf = $("realFold");
+    if (rf){
+      if (t.real){
+        rf.style.display = "";
+        $("realBody").innerHTML = "No. " + t.real.no + " · " + t.real.dates + " (" + t.real.days + " days in total)<br>" +
+          "Peak wind " + t.real.peakKmh + " km/h(JMA 10-minute wind) · JTWC " + t.real.kt + " kt · · Lowest pressure " + t.real.peakP + " hPa · " + t.real.tag + "<br>" +
+          t.real.tip + "<br><span class=\"fold-src\">Data: Wikipedia '2026 Pacific typhoon season' (JMA / JTWC records), as of 2026-11-11; the five stages' wind speeds and pressures were generated from this set of real peak values.</span>";
+      } else {
+        rf.style.display = "none";
+      }
+    }
+    TPL.load(t);
+    renderAllLandfalls();
+    $("strikeNote").textContent = "";
+  }
+
+  /* ---------------- custom typhoon ---------------- */
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, Math.round(v))); }
+  function buildCustom(){
+    var name = $("cName").value.trim() || "Nameless Typhoon";
+    var maxWind = parseInt($("cWind").value, 10);
+    var minPres = parseInt($("cPres").value, 10);
+    var tpl = document.querySelector(".tpl.on").getAttribute("data-tpl");
+    var profiles = {
+      long: [0.42, 0.68, 1.0, 0.72, 0.38],
+      fast: [0.55, 0.9, 1.0, 0.5, 0.3],
+      weak: [0.6, 0.85, 1.0, 0.8, 0.55]
+    };
+    if (tpl === "weak") maxWind = Math.min(maxWind, 30);
+    var prof = profiles[tpl];
+    var presSpan = 1006 - minPres;
+    var texts = {
+      long: [
+        "'" + name + "'was born slowly over the distant sea, in no hurry at all.",
+        "'" + name + "'grew steadily, spinning over the sea for many days.",
+        "'" + name + "'reached its strongest! It lived long at sea — a long-lived typhoon.",
+        "'" + name + "'slowly weakened, its cloud mass loosening little by little.",
+        "'" + name + "'gently faded away at sea. The symphony has finished playing."
+      ],
+      fast: [
+        "'" + name + "'appeared suddenly, and grew astonishingly fast!",
+        "'" + name + "'grew strong almost at once, rushing straight for land!",
+        "'" + name + "'made landfall! Its strongest moment — clang! Gongs and drums!",
+        "After meeting land, '" + name + "'weakened quickly.",
+        "'" + name + "'was gone. It came fast and went fast."
+      ],
+      weak: [
+        "'" + name + "'arrived gently, its winds never very strong.",
+        "'" + name + "'tried hard to grow, but never got very strong.",
+        "This was '" + name + "' at its strongest — still just a soft ding.",
+        "'" + name + "'slowly weakened, like an ordinary spell of wind and rain.",
+        "'" + name + "'quietly faded away."
+      ]
+    };
+    var eyes = ["Eye: not yet formed","Eye: forming","Eye: its clearest moment","Eye: filling in","Eye: gone"];
+    var strikes = ["Ding — triangle","Ding — triangle (a little louder)","Clang — gong + drum (strongest!)","Dong — gong","Ding — triangle (the close)"];
+    var stages = prof.map(function(f, i){
+      var w = clamp(maxWind * f, 12, 58);
+      var p = clamp(1006 - presSpan * f, 905, 1006);
+      return { wind:w, pres:p, text:texts[tpl][i], eye:eyes[i], strike:strikes[i] };
+    });
+    return { name:name, en:"My Typhoon · " + document.querySelector(".tpl.on .tt").textContent, custom:true, stages:stages };
+  }
+
+  /* ---------------- wiring ---------------- */
+  $("cardPick").addEventListener("click", function(){ show("screen-pick"); });
+  $("cardCreate").addEventListener("click", function(){ show("screen-create"); });
+  document.querySelectorAll("[data-back]").forEach(function(b){
+    b.addEventListener("click", function(){ stopAll(); show("screen-home"); });
+  });
+  $("playBack").addEventListener("click", function(){
+    var wasCustom = state.current && state.current.custom;
+    stopAll();
+    show(wasCustom ? "screen-create" : "screen-pick");
+  });
+  $("playBtn").addEventListener("click", function(){
+    if (state.playing) pausePlayback(); else startPlayback();
+  });
+  $("howBtn").addEventListener("click", function(){ show("screen-home"); });
+  /* ⏮/⏭ switch to the previous/next real typhoon in the catalogue (in month-list order);
+     custom typhoons are not in this catalogue, so there is no previous/next to switch to */
+  function jumpToAdjacentTyphoon(dir){
+    var cur = state.current; if (!cur || !cur.real) return;
+    var btns = Array.prototype.slice.call(document.querySelectorAll("#monthList .storm-btn"));
+    var idx = btns.findIndex(function(b){ return b.getAttribute("data-storm") === cur.real.en; });
+    if (idx < 0) return;
+    var next = btns[idx + dir];
+    if (next) next.click();
+  }
+  $("prevBtn").addEventListener("click", function(){ jumpToAdjacentTyphoon(-1); });
+  $("nextBtn").addEventListener("click", function(){ jumpToAdjacentTyphoon(1); });
+
+  $("cWind").addEventListener("input", function(){ $("cWindVal").textContent = this.value + " m/s"; });
+  $("cPres").addEventListener("input", function(){ $("cPresVal").textContent = this.value + " hPa"; });
+  document.querySelectorAll(".tpl").forEach(function(t){
+    t.addEventListener("click", function(){
+      document.querySelectorAll(".tpl").forEach(function(x){ x.classList.remove("on"); });
+      t.classList.add("on");
+    });
+  });
+  $("genBtn").addEventListener("click", function(){
+    loadTyphoon(buildCustom());
+    show("screen-play");
+  });
+
+  window.addEventListener("resize", function(){ drawDemoTrack(); drawDemoCurve(); });
+  buildMonths();
+  buildDots();
+  /* v7: land on Bavi (no. 2609) by default, same path as clicking its card
+     in the left column — just simulate that click so loadTyphoon/TPL.load
+     wire up the chips/curve/landfall button exactly as a real pick would.
+     loadTyphoon never calls startPlayback, so this does not autoplay. */
+  var baviBtn = document.querySelector('.storm-btn[data-storm="Bavi"]');
+  if (baviBtn) baviBtn.click();
+
+    /* ================= v4 adapters: AudioEngine drive / curve / landfall popups ================= */
+    
+    var myStorms = [];
+    var selBox = null, dragRect = null, mapSpawn = null;
+    var mapCv = document.getElementById("tcMap");
+    var pickIcon = "3", pickMonth = 8;
+
+    function curRec(){ var c = state.current; if (!c || !c.real) return null; if (!c.real.cn) c.real.cn = c.real.name; return c.real; }
+    function stageT(){ return TPL.t; }
+    
+    
+    
+    
+    function hideLfPop(){ var p = $("lfPop"); if (p){ p.innerHTML = ""; } }
+    /* v9: landfall records no longer wait until playback reaches that moment to pop up — once a typhoon is picked, all its landfall points are listed at once,
+       just like 'The real record of this storm', they are standing information, not a hint box triggered by playback.
+       When playback passes a landfall point it only triggers the landfall sound effect (strikeLandfallFx), without regenerating the cards. */
+    function renderAllLandfalls(){
+      var container = $("lfPop"); if (!container) return;
+      container.innerHTML = "";
+      var rec = TPL.rec; if (!rec || !TPL.anchors) return;
+      getLandfalls(rec).forEach(function(lf){ appendLfCard(lf); });
+    }
+    function strikeLandfallFx(lf){
+      var rec = TPL.rec; if (!rec || !TPL.anchors) return;
+      var kt = Math.round(windAt(TPL.anchors, lf.t));
+      try{ AudioEngine.strikeLandfall(catFromKt(kt), kt); }catch(e){}
+    }
+    /* v8: the landfall popup content is ported section by section from the original showLfPopups — headline + readout line + (the action row and note for the two branches: verified videos / no verified videos).
+       pres uses the original's own formula (ratio^1.3), which is a different thing from TPL.presAt()'s linear formula;
+       it doesn't borrow TPL's method, only reads TPL.rec's kt/peakP as raw data. */
+    function appendLfCard(lf){
+      var rec = TPL.rec; if (!rec || !TPL.anchors) return;
+      var container = $("lfPop"); if (!container) return;
+      var kt = Math.round(windAt(TPL.anchors, lf.t));
+      var ratio = Math.pow(Math.min(1, kt / Math.max(1, rec.kt)), 1.3);
+      var pres = Math.round(1012 - (1012 - rec.peakP) * ratio);
+      var card = document.createElement("div"); card.className = "lfpop";
+      var h4 = document.createElement("h4");
+      h4.innerHTML = "📍 Landfall · <span class=\"lf-place\">" + esc(lf.place) + "</span> · " + esc(lf.label);
+      card.appendChild(h4);
+      var meta = document.createElement("p");
+      meta.innerHTML = "Playback readings at this moment of landfall (estimated from the wind-speed curve): wind <b class=\"num\">" + kt +
+        " kt</b> · central pressure about <b class=\"num\">" + pres + " hPa</b>";
+      card.appendChild(meta);
+      var box = document.createElement("div"); card.appendChild(box);
+      var vids = LF_VERIFIED_VIDEOS[rec.no] || [];
+      var extra = LF_EXTRA_LINK[rec.no];
+      var wv = $("wvOpen");
+      var wvOk = !!(wv && wv.getAttribute("href") && wv.getAttribute("href") !== "#");
+      function actionLink(cls, href, label){
+        var a = document.createElement("a"); a.className = cls; a.target = "_blank"; a.rel = "noopener";
+        a.href = href; a.textContent = label; return a;
+      }
+      var actions = document.createElement("div"); actions.className = "lf-actions";
+      var note = document.createElement("div"); note.className = "lf-note";
+      if (lf.main && vids.length){
+        /* Verified real footage, one by one: embed and play directly */
+        var vwrap = document.createElement("div"); vwrap.className = "lf-videos";
+        vids.forEach(function(v){
+          var cell = document.createElement("div"); cell.className = "lf-vid";
+          var f = document.createElement("iframe"); f.src = v.embed; f.title = v.cap; f.loading = "lazy";
+          f.setAttribute("allow", "accelerometer; encrypted-media; picture-in-picture");
+          f.setAttribute("allowfullscreen", "");
+          f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+          var cap = document.createElement("div"); cap.className = "cap"; cap.textContent = v.cap;
+          cell.appendChild(f); cell.appendChild(cap); vwrap.appendChild(cell);
+        });
+        box.appendChild(vwrap);
+        actions.appendChild(actionLink("lf-btn", lfSearchUrl(rec, lf), "Watch more footage of this landfall on YouTube ↗"));
+        if (extra) actions.appendChild(actionLink("lf-btn ghost", extra.url, extra.label));
+        if (wvOk) actions.appendChild(actionLink("lf-btn ghost", wv.getAttribute("href"), "NASA Satellite Imagery ↗"));
+        box.appendChild(actions);
+        note.textContent = "The three clips above are verified real footage (from the Saipan/Tinian footage embedded in the Marianas Press report) — not a live stream, and not simulated footage.";
+        box.appendChild(note);
+      } else {
+        /* No verified footage links one by one: don't invent addresses, just give the YouTube search entry */
+        actions.appendChild(actionLink("lf-btn", lfSearchUrl(rec, lf), "▶ Watch footage of this landfall on YouTube ↗"));
+        if (extra) actions.appendChild(actionLink("lf-btn ghost", extra.url, extra.label));
+        if (wvOk) actions.appendChild(actionLink("lf-btn ghost", wv.getAttribute("href"), "NASA Satellite Imagery ↗"));
+        box.appendChild(actions);
+        note.textContent = (rec.no === "2612")
+          ? "\"Huizhou footage · July 26\" is Huizhou footage posted on Bilibili by creator Haibian de Yibangren w (squall-line footage ahead of Hongxia and live Huizhou scenes from July 26, 2026) — it is Huizhou on the day of landfall, not the exact moment of the early-morning Pinghai Town landfall."
+          : "Footage of this landfall is scattered across news reports and people's videos, and there is no individually verified direct link here, so no address is invented — click the button above to see real footage on the YouTube search results page.";
+        box.appendChild(note);
+      }
+      container.appendChild(card);
+    }
+    function drawDemoCurve(){
+      var cv = $("curveCanvas"); if (!cv || !cv.getContext) return;
+      var s = sizeCanvas(cv), ctx = s.ctx, W = s.w, H = s.h;
+      ctx.clearRect(0, 0, W, H);
+      if (!TPL.anchors) return;
+      var peak = Math.max(30, TPL.peakKt), top = Math.ceil(peak / 25) * 25;
+      var t = Math.max(0, Math.min(1, stageT())), left = 30, right = W - 10, bottom = H - 24;
+      $("curvePeak").textContent = Math.round(TPL.peakKt) + " kt";
+      function X(tt){ return left + tt * (right - left); }
+      function Y(k){ return bottom - (k / top) * (bottom - 12); }
+      ctx.font = "10px system-ui, sans-serif";
+      ctx.lineWidth = 1;
+      for (var row = 0; row <= 2; row++){
+        var k = top * row / 2, y = Y(k);
+        ctx.strokeStyle = "rgba(255,255,255,.08)";
+        ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+        ctx.fillStyle = "#9a9a9a"; ctx.textAlign = "right"; ctx.fillText(Math.round(k), left - 7, y + 3);
+      }
+      ctx.fillStyle = "#6b6b6b"; ctx.textAlign = "left"; ctx.fillText("kt", 0, 10);
+      ctx.fillStyle = "#9a9a9a"; ctx.fillText("Birth", left, H - 4);
+      ctx.textAlign = "right"; ctx.fillText("Dissipation", right, H - 4);
+      function trace(until){
+        ctx.moveTo(X(0), Y(windAt(TPL.anchors, 0)));
+        for (var i = 1; i <= 120; i++){
+          var tt = Math.min(i / 120, until);
+          ctx.lineTo(X(tt), Y(windAt(TPL.anchors, tt)));
+          if (tt >= until) break;
+        }
+      }
+      var fill = ctx.createLinearGradient(0, 12, 0, bottom);
+      fill.addColorStop(0, "rgba(51,184,212,.24)"); fill.addColorStop(1, "rgba(51,184,212,.02)");
+      ctx.beginPath(); trace(1); ctx.lineTo(X(1), bottom); ctx.lineTo(X(0), bottom); ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+      ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath(); trace(1); ctx.strokeStyle = "rgba(127,212,232,.35)"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); trace(t); ctx.strokeStyle = "#7fd4e8"; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(t), 10); ctx.lineTo(X(t), bottom);
+      ctx.setLineDash([3, 4]); ctx.strokeStyle = "rgba(127,212,232,.45)"; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+      if (TPL.rec) getLandfalls(TPL.rec).forEach(function(lf){
+        ctx.beginPath(); ctx.arc(X(lf.t), Y(windAt(TPL.anchors, lf.t)), 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#e8a33d"; ctx.fill(); ctx.strokeStyle = "#121212"; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+      ctx.beginPath(); ctx.arc(X(t), Y(windAt(TPL.anchors, t)), 7, 0, Math.PI * 2); ctx.fillStyle = "rgba(51,184,212,.18)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(X(t), Y(windAt(TPL.anchors, t)), 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#33b8d4"; ctx.lineWidth = 2; ctx.stroke();
+    }
+    function playTcStorm(s){
+      var t = { name: s.cn, en: s.en || "MY TYPHOON", custom: true, tcRec: s, stages: stagesFor(s) };
+      loadTyphoon(t); show("screen-play"); startPlayback();
+    }
+
+    /* ================= v4 wiring: sound panel / landfall button / curve seek ================= */
+    document.querySelectorAll("#aeLayers .ae-chip").forEach(function(ch){
+      ch.addEventListener("click", function(){
+        var on = ch.classList.toggle("on");
+        try{
+          AudioEngine.layers[ch.dataset.layer] = on;
+          if (TPL.playing && (ch.dataset.layer === "wind" || ch.dataset.layer === "rain")) AudioEngine.setWeather(windAt(TPL.anchors, TPL.t));
+          if (TPL.playing && ch.dataset.layer === "music" && !on) AudioEngine.stopMusic();
+        }catch(e){}
+      });
+    });
+    $("aeVol").addEventListener("input", function(){ try{ AudioEngine.setVolume(this.value / 100); }catch(e){} });
+    $("curveCanvas").addEventListener("click", function(ev){
+      if (!TPL.anchors) return;
+      var r = this.getBoundingClientRect();
+      var t = (ev.clientX - r.left - 30) / Math.max(1, r.width - 40);
+      t = Math.max(0, Math.min(1, t));
+      setStage(Math.max(0, Math.min(4, Math.floor(t * 5))), state.playing);
+      if (state.playing) restartStageTimer();
+      drawDemoCurve();
+    });
+
+    /* hand-drawn icon fallback (the icon PNGs are not in the project) */
+    document.addEventListener("error", function(ev){
+      var img = ev.target;
+      if (!img || img.tagName !== "IMG") return;
+      var src = img.getAttribute("src") || "";
+      if (src.indexOf("./assets/typhoon-icons/icon-") !== 0 || img.dataset.fb) return;
+      img.dataset.fb = "1";
+      img.src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#12325e"/><path d="M50 22a28 28 0 1 1-19.8 8.2A22 22 0 1 0 50 32a16 16 0 1 1-11-4.4" fill="none" stroke="#ffd166" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="50" r="6" fill="#33b8d4"/></svg>');
+    }, true);
+
+    /* ================= v4 maker wiring (the Typhoon Collection's make-your-own typhoon, tc- ids) ================= */
+    var tcInitDone = false;
+    function tcInit(){
+      if (tcInitDone) return; tcInitDone = true;
+      var ip = $("tcIconPick"); ip.innerHTML = "";
+      ICONS.forEach(function(k){
+        var b = document.createElement("button"); b.type = "button"; b.dataset.k = k;
+        b.innerHTML = '<img src="' + iconFile(k) + '" alt="" /><span>' + (k === "rem" ? "Remnant Low" : CAT_LABEL[k]) + "</span>";
+        if (k === pickIcon) b.classList.add("on");
+        b.addEventListener("click", function(){ pickIcon = k; ip.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x.dataset.k === k); }); });
+        ip.appendChild(b);
+      });
+      var mp = $("tcMonthPick"); mp.innerHTML = "";
+      for (var m = 1; m <= 12; m++){ (function(mm){
+        var b = document.createElement("button"); b.type = "button"; b.textContent = MONTH_ABBR[mm-1];
+        if (mm === pickMonth) b.classList.add("on");
+        b.addEventListener("click", function(){ pickMonth = mm; mp.querySelectorAll("button").forEach(function(x, xi){ x.classList.toggle("on", xi === mm - 1); }); $("tcMonthHint").textContent = MONTH_HINTS[mm] || ""; });
+        mp.appendChild(b);
+      })(m); }
+      $("tcMonthHint").textContent = MONTH_HINTS[pickMonth] || "";
+      $("tcDice").addEventListener("click", function(){ $("tcName").value = NAME_POOL[Math.floor(Math.random() * NAME_POOL.length)]; });
+      var boxMode = false, boxBtn = $("tcBoxBtn"), boxInfo = $("tcBoxInfo");
+      function setBoxMode(on){ boxMode = on; boxBtn.setAttribute("aria-pressed", on ? "true" : "false"); boxBtn.textContent = on ? "▭ Selecting: hold and drag a box on the map…" : "▭ Select a sea area on the map"; if (mapCv) mapCv.style.cursor = on ? "crosshair" : ""; }
+      boxBtn.addEventListener("click", function(){ setBoxMode(!boxMode); });
+      $("tcBoxClear").addEventListener("click", function(){ selBox = null; boxInfo.textContent = "Selection cleared. Now using the full random range (south of 45°N, north of 39°S)."; drawMakerMap(); });
+      function clampBox(b){ return { latMin: Math.max(BOUNDS.latMin, Math.min(b.latMin, b.latMax)), latMax: Math.min(BOUNDS.latMax, Math.max(b.latMin, b.latMax)), lonMin: Math.max(BOUNDS.lonMin, Math.min(b.lonMin, b.lonMax)), lonMax: Math.min(BOUNDS.lonMax, Math.max(b.lonMin, b.lonMax)) }; }
+      function canvasLatLon(ev){ var r = mapCv.getBoundingClientRect(), p = proj(r.width, r.height); var px = ev.clientX - r.left, py = ev.clientY - r.top; return { px: px, py: py, lon: p.lon(px), lat: p.lat(py) }; }
+      if (mapCv){
+        mapCv.addEventListener("pointerdown", function(ev){ if (!boxMode) return; ev.preventDefault(); var q = canvasLatLon(ev); dragRect = { x: q.px, y: q.py, w: 0, h: 0, lon0: q.lon, lat0: q.lat, lon1: q.lon, lat1: q.lat }; try{ mapCv.setPointerCapture(ev.pointerId); }catch(e){} drawMakerMap(); });
+        mapCv.addEventListener("pointermove", function(ev){ if (!boxMode || !dragRect) return; var q = canvasLatLon(ev); dragRect.lon1 = q.lon; dragRect.lat1 = q.lat; dragRect.w = q.px - dragRect.x; dragRect.h = q.py - dragRect.y; drawMakerMap(); });
+        mapCv.addEventListener("pointerup", function(ev){ if (!boxMode || !dragRect) return; var b = clampBox({ latMin: dragRect.lat0, latMax: dragRect.lat1, lonMin: dragRect.lon0, lonMax: dragRect.lon1 }); dragRect = null; if (Math.abs(b.latMax - b.latMin) < 1 || Math.abs(b.lonMax - b.lonMin) < 1){ boxInfo.textContent = "That box is too small — try a bigger one."; } else { selBox = b; boxInfo.textContent = "Sea area selected: " + fmtLat(b.latMin) + "–" + fmtLat(b.latMax) + ", " + fmtLon(b.lonMin) + "–" + fmtLon(b.lonMax) + ". Generation points will only fall inside this box."; setBoxMode(false); } drawMakerMap(); });
+      }
+      $("tcGenBtn").addEventListener("click", function(){
+        var name = ($("tcName").value || "").trim() || "Nameless Typhoon";
+        var R = selBox || BOUNDS;
+        var lat = R.latMin + Math.random() * (R.latMax - R.latMin);
+        var lon = R.lonMin + Math.random() * (R.lonMax - R.lonMin);
+        var targetCat = (pickIcon === "rem") ? "d" : pickIcon;
+        var note = "";
+        if (Math.random() < (MONTH_DOWN[pickMonth] || 0)){ var idx = CAT_ORDER.indexOf(targetCat); if (idx > 1){ targetCat = CAT_ORDER[idx - 1]; note = "Sea temperatures run low in " + MONTH_ABBR[pickMonth-1] + ", so its peak was capped one category lower -- it actually reached " + CAT_LABEL[targetCat] + "."; } }
+        var range = CAT_KT_RANGE[targetCat];
+        var kt = Math.round(range[0] + Math.random() * (range[1] - range[0]));
+        var peakP = Math.round(1012 - Math.pow(kt, 1.42) * 0.105); if (peakP < 895) peakP = 895;
+        var days = Math.max(3, Math.round(4 + Math.random() * 10 + kt / 22));
+        var storm = { no: "custom", cn: name, en: "MY TYPHOON", month: pickMonth, custom: true, dates: "Formed in " + MONTH_ABBR[pickMonth-1] + " · lasted about " + days + " days", days: days, peakKmh: Math.round(kt * 1.852 * 0.87), peakP: peakP, kt: kt, cat: catFromKt(kt), tip: "", lat: lat, lon: lon };
+        myStorms.unshift(storm);
+        var res = $("tcSpawn"); res.className = "spawn-result show";
+        res.innerHTML = "🎉 <b>'" + esc(name) + "'is born!</b><br>Location: " + regionName(lat, lon) + " (" + fmtLat(lat) + ", " + fmtLon(lon) + ")<br>Expected peak: <b>" + CAT_LABEL[storm.cat] + "</b>, about " + kt + " kt" + (note ? "<br>" + note : "") + "<br>It has been added to 'My Typhoons' below, and playback starts automatically.";
+        mapSpawn = { lat: lat, lon: lon, name: name, path: trackPoints(storm) };
+        drawMakerMap(); renderMine(); playTcStorm(storm);
+      });
+      window.addEventListener("resize", function(){ try{ drawMakerMap(); }catch(e){} });
+      drawMakerMap(); renderMine();
+    }
+    /* v6 shell glue: the icon/name/month/map maker UI used to be lazily
+       built the first time its <details id="tcMakerFold"> accordion was
+       opened. In the new shell it lives permanently split across the
+       middle and right columns (shown via data-mode="maker"), so it is
+       initialised eagerly here instead of on a "toggle" event. The
+       tcMakerFold id now belongs to the secondary slider-based form. */
+    tcInit();
+
+})();
+</script>
+</body>
+</html>
