@@ -8,19 +8,19 @@
 <title>Typhoon Jukebox Demo</title>
 <style>
   :root{
-    --bg:#0a0a0a;
-    --bg-deep:#000000;
-    --panel:#121212;
-    --panel-2:#1a1a1a;
-    --panel-3:#202020;
-    --line:rgba(255,255,255,.09);
-    --line-strong:rgba(255,255,255,.16);
-    --cyan:#33b8d4;
+    --bg:#091522;
+    --bg-deep:#07111c;
+    --panel:#0c1e2e;
+    --panel-2:#102638;
+    --panel-3:#163449;
+    --line:rgba(112,174,206,.16);
+    --line-strong:rgba(112,174,206,.3);
+    --cyan:#60d7e9;
     --cyan-dim:#7fd4e8;
     --cyan-wash:rgba(51,184,212,.12);
-    --ink:#ffffff;
-    --muted:#9a9a9a;
-    --faint:#6b6b6b;
+    --ink:#eaf5ff;
+    --muted:#93aec1;
+    --faint:#6d899d;
     --silver:#b3b3b3;
     --amber:#33b8d4;
     --landfall:#e8a33d;
@@ -477,13 +477,124 @@
   .transport-btn:active{ transform:scale(.94); }
 
     #playBack{ display:none !important; } /* the "pick storm / back to maker" chip was dropped: the left column is always on screen, so no back button is needed */
+  /* Observation-console theme; motion follows the existing playback state. */
+  body{ background:#07111d; color:#e9f4ff; }
+  .topbar-main{ min-height:76px; padding:14px 26px; background:#091522; border-bottom:1px solid rgba(103,194,225,.2); }
+  .topbar-main .tb-left{ display:flex; align-items:center; gap:13px; letter-spacing:.06em; }
+  .brand-orbit{ display:grid; place-items:center; width:36px; height:36px; flex:none; border:1px solid #326475; border-radius:50%; box-shadow:inset 0 0 0 5px #0c2233; }
+  .brand-orbit svg{ width:22px; height:22px; color:var(--cyan); }
+  .brand-copy{ display:flex; flex-direction:column; gap:5px; }
+  .brand-copy strong{ font-size:14px; letter-spacing:.13em; }
+  .brand-copy small{ font-size:10px; font-weight:400; color:var(--muted); letter-spacing:.06em; }
+  .topbar-main .console-caption{ font:10px ui-monospace,monospace; letter-spacing:.14em; color:#8ab2c8; border-left:1px solid var(--line-strong); padding-left:18px; white-space:nowrap; }
+  .shell{ min-height:calc(100vh - 76px); }
+  .col-left{ background:#08131f; border-color:var(--line); padding-top:22px; }
+  .col-mid{ background:radial-gradient(ellipse at 100% 0,rgba(43,135,178,.08),transparent 60%),#091522; padding-top:26px; }
+  .col-right{ background:#0b1928; border-color:var(--line); padding-top:22px; }
+  .library-heading{ display:flex; align-items:center; justify-content:space-between; margin:0 3px 17px; color:#8eb2c8; font:10px ui-monospace,monospace; letter-spacing:.14em; }
+  .library-heading span:last-child{ color:var(--cyan); border:1px solid #234453; padding:3px 7px; border-radius:4px; }
+  .month{ border-color:var(--line); border-radius:8px; background:#0b1b2b; }
+  .month-head{ font-size:.91rem; padding:12px 14px; }
+  .month-head .cnt{ font:11px ui-monospace,monospace; color:#7f9bae; }
+  .month.open{ border-color:#315265; }
+  .storm-btn{ background:#0d2031; border-color:transparent; border-radius:7px; padding:11px 12px; }
+  .storm-btn:hover{ background:#132b3e; border-color:#2a5368; }
+  .storm-btn.current{ background:#102e40; border-color:#2a657b; border-left:3px solid var(--cyan); }
+  .storm-btn .nm{ font-size:.95rem; letter-spacing:.01em; }
+  .storm-btn .meta{ color:#8ca9bd; font-size:.74rem; }
+  .storm-btn .tag{ color:#a1c7d9; background:#102738; border-color:#284658; font-size:.62rem; padding:3px 6px; }
+  .lib-entry{ border-radius:8px; background:#0e2335; border-color:#29475a; font-size:.85rem; }
+  .mine-head{ text-transform:uppercase; letter-spacing:.12em; font-size:.66rem; }
+  .storm-heading-card{ position:relative; display:grid; grid-template-columns:clamp(88px,10vw,136px) minmax(0,1fr); align-items:center; gap:20px; padding:22px 18px; border:1px solid #28485c; border-radius:14px; background:linear-gradient(120deg,#10293a,#0b1c2c); overflow:hidden; }
+  .storm-heading-card::after{ content:""; position:absolute; right:-45px; top:-60px; width:190px; height:190px; border:1px solid rgba(104,192,224,.09); border-radius:50%; box-shadow:0 0 0 24px rgba(104,192,224,.025),0 0 0 49px rgba(104,192,224,.018); pointer-events:none; }
+  .record-deck{ position:relative; aspect-ratio:1; width:100%; border:1px solid #34576a; border-radius:14px; padding:10px; background:linear-gradient(145deg,#183043,#08131f); box-shadow:0 10px 24px #030a1260,inset 0 1px 0 #7babc52b; }
+  .record-deck:hover{ border-color:#6ecfe5; }
+  .record-deck:focus-visible{ outline:2px solid var(--cyan); outline-offset:4px; }
+  .record-deck::before,.record-deck::after{ content:""; position:absolute; width:3px; height:3px; border-radius:50%; background:#6f8b9c; bottom:5px; }
+  .record-deck::before{ left:6px; }.record-deck::after{ right:6px; }
+  .vinyl-disc{ display:grid; place-items:center; width:100%; height:100%; border-radius:50%; border:1px solid #4c7485; background:conic-gradient(from 25deg,transparent 0deg,rgba(128,198,223,.21) 38deg,transparent 67deg,transparent 190deg,rgba(128,198,223,.12) 223deg,transparent 250deg),repeating-radial-gradient(circle,#09111b 0 2px,#223441 2.5px 3px,#0b1824 3.5px 5px); box-shadow:0 3px 9px #0009,inset 0 0 0 3px #06101b; animation:record-turn 9s linear infinite; animation-play-state:paused; }
+  .vinyl-label{ display:grid; place-items:center; position:relative; width:38%; height:38%; border:1px solid #60c4e0; border-radius:50%; background:#16485c; box-shadow:0 0 0 4px #0b1a27; }
+  .vinyl-label svg{ width:74%; height:74%; color:#a2ebf6; }
+  .vinyl-label::after{ content:""; position:absolute; width:5px; height:5px; border-radius:50%; background:#091321; border:1px solid #d4effa; }
+  .record-tonearm{ position:absolute; z-index:1; right:10px; top:9px; width:23%; height:46%; border-top:3px solid #91aab9; border-left:3px solid #91aab9; border-radius:8px 0 0 0; transform:rotate(-17deg); transform-origin:top right; filter:drop-shadow(1px 2px 1px #0008); }
+  .record-tonearm::before{ content:""; position:absolute; right:-4px; top:-6px; width:9px; height:9px; border:2px solid #526d80; border-radius:50%; background:#c3d3dc; }
+  .record-tonearm::after{ content:""; position:absolute; bottom:-3px; left:-5px; width:8px; height:12px; border:1px solid #bbd4df; border-radius:2px; background:#223e51; }
+  body.playing .vinyl-disc{ animation-play-state:running; }
+  @keyframes record-turn{ to{ transform:rotate(360deg); } }
+  #midInfo .play-title{ position:relative; z-index:1; text-align:left; margin:0; min-width:0; }
+  .info-kicker{ margin-bottom:10px; font:9px ui-monospace,monospace; letter-spacing:.13em; color:#85b8d0; text-transform:uppercase; line-height:1.7; }
+  #midInfo .play-title .name{ font-size:clamp(1.4rem,2.5vw,2.7rem); font-weight:750; letter-spacing:-.035em; line-height:1.12; overflow-wrap:anywhere; }
+  #midInfo .play-title .en{ margin-top:9px; font:10px/1.6 ui-monospace,monospace; color:#9bb8cb; letter-spacing:.03em; }
+  .record-status{ display:flex; align-items:center; gap:6px; margin-top:14px; color:#789aad; font:9px ui-monospace,monospace; letter-spacing:.13em; }
+  .record-status::before{ content:""; width:5px; height:5px; flex:none; border-radius:50%; background:#6e8799; }
+  .record-status .is-playing{ display:none; }
+  body.playing .record-status{ color:#80e0ed; }
+  body.playing .record-status::before{ background:#54d6e8; box-shadow:0 0 8px #40cee477; }
+  body.playing .record-status .is-playing{ display:inline; }
+  body.playing .record-status .is-idle{ display:none; }
+  #midInfo .chips{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:14px 0 20px; }
+  #midInfo .chip{ display:flex; flex-direction:column; gap:8px; padding:13px 10px; border-color:#233e52; border-radius:8px; background:#0b1b2a; font-size:10px; color:#8fadc0; }
+  #midInfo .chip b{ margin:0; white-space:nowrap; font:600 clamp(.88rem,1.8vw,1.3rem) ui-monospace,monospace; color:#e6f5ff; }
+  #midInfo .chip b .unit{ font-size:10px; color:#75bdcf; }
+  .eye-label{ border-color:#2a5364; background:#102a39; color:#9bd8e7; border-radius:5px; font-size:.72rem; }
+  .narration{ background:#0e2535; border-color:#24475b; border-left:2px solid #52c8e1; border-radius:0 8px 8px 0; text-align:left; justify-content:flex-start; font-size:.9rem; line-height:1.8; padding:15px; }
+  .realfold{ background:#0b1d2d; border-color:#254258; border-radius:10px; padding:16px; }
+  .realfold-title{ font-size:.86rem; }
+  .realfold .real-body{ color:#98b3c6; font-size:.82rem; }
+  .stage-label{ display:flex; align-items:center; gap:8px; margin-bottom:8px; text-transform:uppercase; color:#90b5ca; font:10px ui-monospace,monospace; letter-spacing:.12em; }
+  .stage-label::before{ content:""; width:5px; height:5px; flex:none; background:#5bcbe0; }
+  .stage .grid-lines{ display:none; }
+  .stage .coast{ display:none; }
+  #cloudView,#pathView{ border-color:#2b4c61; background:#091928; border-radius:10px; }
+  #pathView{ padding-top:12px; }
+  .track-cap{ color:#809fb3; font-size:.69rem; line-height:1.7; }
+  .curve-box,.ae-panel{ background:#0c1e2e; border-color:#29485d; border-radius:10px; }
+  .curve-head h3{ font-size:.8rem; }
+  .curve-cap,.curve-peak{ color:#8cabc0; }
+  .transport-row{ gap:22px; padding:4px 0; }
+  .play-btn{ width:68px; height:68px; border:1px solid #76e1ee; background:#59d2e5; color:#062131; box-shadow:0 0 0 6px #54cada0b; font-size:1.8rem; }
+  .play-btn:hover{ background:#94e9f4; }
+  .transport-btn{ width:42px; height:42px; background:#102637; border-color:#325267; color:#a6c8da; }
+  .ae-chip{ border-radius:6px; background:#0c1c2b; border-color:#28485c; padding:7px 9px; font-size:11px; }
+  .ae-chip.on{ background:#14394a; border-color:#39778c; color:#b3eef6; }
+  .ae-vol{ color:#8fadc0; font-size:11px; }
+  input[type="range"]{ accent-color:#5bd5e8; }
+  .menu-toggle,.menu-close{ background:#10293a; border-color:#35556a; }
+  @media (max-width:1199px){
+    .topbar-main{ padding:12px 18px; }
+    .storm-heading-card{ gap:14px; padding:17px 14px; }
+    .record-deck{ padding:7px; border-radius:11px; }
+    .info-kicker{ font-size:8px; letter-spacing:.08em; }
+    #midInfo .chip{ padding:10px 7px; font-size:9px; }
+  }
+  @media (max-width:640px){
+    .topbar-main{ min-height:68px; }
+    .brand-copy strong{ font-size:12px; }
+    .brand-copy small{ font-size:8px; line-height:1.5; }
+    .topbar-main .console-caption{ display:none; }
+    .storm-heading-card{ grid-template-columns:82px minmax(0,1fr); padding:14px; gap:16px; }
+    #midInfo .play-title .name{ font-size:1.9rem; }
+    #midInfo .play-title .en{ font-size:9px; margin-top:6px; }
+    .info-kicker{ margin-bottom:6px; }
+    .record-status{ margin-top:8px; font-size:8px; }
+    #midInfo .chips{ margin:10px 0; }
+    #midInfo .chip b{ font-size:1.05rem; }
+    .record-tonearm{ right:7px; top:7px; border-width:2px; }
+    .record-tonearm::before{ width:7px; height:7px; }
+    .record-tonearm::after{ width:6px; height:9px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .vinyl-disc,body.playing .vinyl-disc{ animation:none; }
+  }
+
   </style>
 </head>
 <body data-mode="player">
 
 <div class="topbar-main">
   <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open typhoon library" aria-controls="librarySidebar" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-  <div class="tb-left">TYPHOON JUKEBOX · NASA Space Apps Challenge Tokyo 2026</div>
+  <div class="tb-left"><span class="brand-orbit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1v5m0 12v5M1 12h5m12 0h5"/></svg></span><span class="brand-copy"><strong>TYPHOON JUKEBOX</strong><small>NASA SPACE APPS CHALLENGE · TOKYO 2026</small></span></div>
+  <span class="console-caption">EARTH DATA / SOUND EXPERIENCE</span>
 </div>
 
 <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
@@ -494,6 +605,7 @@
   <aside class="col-left" id="librarySidebar" aria-label="Typhoon library" tabindex="-1">
     <div class="drawer-head"><strong>Typhoon library</strong><button class="menu-close" id="menuClose" type="button" aria-label="Close typhoon library">×</button></div>
     <div class="lib-entries" style="display:none"></div>
+    <div class="library-heading"><span>STORM ARCHIVE</span><span>2026</span></div>
     <div class="lib-scroll">
       <div class="month-list" id="monthList"></div>
       <button class="lib-entry" id="cardCreate" type="button" style="width:100%; margin-top:20px;">+ Build a Typhoon</button>
@@ -508,9 +620,17 @@
 
     <div class="mid-panel" id="midInfo">
       <button class="back-btn mini" type="button" id="playBack">&lsaquo; Pick a storm</button>
-      <div class="play-title">
+      <div class="storm-heading-card">
+        <button class="record-deck" id="recordToggle" type="button" aria-label="Play or pause the typhoon record">
+          <span class="vinyl-disc" aria-hidden="true"><span class="vinyl-label"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 8a12 12 0 1 1-10.4 18M20 32A12 12 0 1 1 30.4 14"/><path d="m18 4 3 4-4 3m5 25-3-4 4-3"/><circle cx="20" cy="20" r="5"/></svg></span></span>
+          <span class="record-tonearm" aria-hidden="true"></span>
+        </button>
+        <div class="play-title">
+          <div class="info-kicker">ATMOSPHERIC SONIFICATION</div>
         <div class="name" id="playName">Bavi</div>
         <div class="en" id="playEn">BAVI · July 2026</div>
+          <div class="record-status"><span class="is-idle">READY TO PLAY</span><span class="is-playing">NOW PLAYING</span></div>
+      </div>
       </div>
 
       <div class="chips">
@@ -2373,6 +2493,7 @@
     stopAll();
     show(wasCustom ? "screen-create" : "screen-pick");
   });
+  $("recordToggle").addEventListener("click", function(){ $("playBtn").click(); });
   $("playBtn").addEventListener("click", function(){
     if (state.playing) pausePlayback(); else startPlayback();
   });
