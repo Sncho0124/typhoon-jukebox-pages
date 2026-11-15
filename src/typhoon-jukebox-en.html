@@ -639,6 +639,28 @@
         <span class="chip">Lifetime<b><span id="chipBpm">&ndash;</span> <span class="unit" id="chipDayUnit">days</span></b></span>
       </div>
 
+      <div class="curve-box">
+        <div class="curve-head"><h3 id="curveTitle">Wind-speed curve</h3><span class="curve-peak">Peak <strong id="curvePeak">– kt</strong></span></div>
+        <canvas id="curveCanvas" height="144" role="img" aria-labelledby="curveTitle" aria-describedby="curveHint"></canvas>
+        <div class="curve-cap"><span id="curveHint">Click the curve to seek</span><span class="curve-legend">Landfall</span></div>
+      </div>
+
+      <div class="transport-row">
+        <button class="transport-btn" id="prevBtn" type="button" aria-label="Previous storm">&#9198;</button>
+        <button class="play-btn" id="playBtn" type="button" aria-label="Play or pause">&#9654;</button>
+        <button class="transport-btn" id="nextBtn" type="button" aria-label="Next storm">&#9197;</button>
+      </div>
+
+      <div class="ae-panel">
+        <div class="ae-row" id="aeLayers">
+          <button type="button" class="ae-chip on" data-layer="music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music</button>
+          <button type="button" class="ae-chip on" data-layer="wind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.8 19.6a2 2 0 1 0 1.2-3.6H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></svg>Wind</button>
+          <button type="button" class="ae-chip on" data-layer="rain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 14v6M12 16v6M16 14v6"/></svg>Rain</button>
+          <button type="button" class="ae-chip on" data-layer="thunder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>Thunder</button>
+        </div>
+        <label class="ae-vol">Volume <input id="aeVol" type="range" min="0" max="100" value="45" /></label>
+      </div>
+
       <details class="storm-details" id="stormDetails" open>
         <summary>Live commentary & storm records</summary>
       <div class="eye-label" id="eyeLabel">Eye: not yet formed</div>
@@ -810,27 +832,6 @@
         </div>
       </div>
 
-      <div class="curve-box">
-        <div class="curve-head"><h3 id="curveTitle">Wind-speed curve</h3><span class="curve-peak">Peak <strong id="curvePeak">– kt</strong></span></div>
-        <canvas id="curveCanvas" height="144" role="img" aria-labelledby="curveTitle" aria-describedby="curveHint"></canvas>
-        <div class="curve-cap"><span id="curveHint">Click the curve to seek</span><span class="curve-legend">Landfall</span></div>
-      </div>
-
-      <div class="transport-row">
-        <button class="transport-btn" id="prevBtn" type="button" aria-label="Previous storm">&#9198;</button>
-        <button class="play-btn" id="playBtn" type="button" aria-label="Play or pause">&#9654;</button>
-        <button class="transport-btn" id="nextBtn" type="button" aria-label="Next storm">&#9197;</button>
-      </div>
-
-      <div class="ae-panel">
-        <div class="ae-row" id="aeLayers">
-          <button type="button" class="ae-chip on" data-layer="music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music</button>
-          <button type="button" class="ae-chip on" data-layer="wind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.8 19.6a2 2 0 1 0 1.2-3.6H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></svg>Wind</button>
-          <button type="button" class="ae-chip on" data-layer="rain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 14v6M12 16v6M16 14v6"/></svg>Rain</button>
-          <button type="button" class="ae-chip on" data-layer="thunder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>Thunder</button>
-        </div>
-        <label class="ae-vol">Volume <input id="aeVol" type="range" min="0" max="100" value="45" /></label>
-      </div>
 
     </div>
 
